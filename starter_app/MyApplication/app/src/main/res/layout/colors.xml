@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="black">#FF000000</color>
+    <color name="white">#FFFFFFFF</color>
+
+    <!-- App Theme Colors -->
+    <color name="colorPrimary">#4B5EFC</color>
+    <color name="colorPrimaryDark">#3949AB</color>
+    <color name="colorAccent">#7E57C2</color>
+
+    <!-- Background Colors -->
+    <color name="background_light">#EDF0F5</color>
+    <color name="text_primary">#1D2238</color>
+    <color name="text_secondary">#6E7191</color>
+
+    <!-- Card Colors -->
+    <color name="card_python">#6c89c8</color>
+    <color name="card_javascript">#F7DF1E</color>
+    <color name="card_swift">#F05138</color>
+    <color name="card_rust">#7E57C2</color>
+    <color name="card_kotlin">#8861F5</color>
+    <color name="card_dart">#54C5F8</color>
+    <color name="card_go">#00ADD8</color>
+</resources>
