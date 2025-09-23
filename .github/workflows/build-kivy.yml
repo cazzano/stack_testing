@@ -1,16 +1,16 @@
-# .github/workflows/build-kivy.yml
+# Manual Docker approach
 name: Build Kivy Android APK from cross_plateform branch
 
 on:
   push:
-    branches: [ cross_plateform ]  # Monitor cross_plateform branch
+    branches: [ cross_plateform ]
     paths: 
       - 'python/kivy/**'
   pull_request:
     branches: [ cross_plateform ]
     paths:
       - 'python/kivy/**'
-  workflow_dispatch:  # Manual trigger
+  workflow_dispatch:
     inputs:
       branch:
         description: 'Branch to build from'
@@ -20,13 +20,12 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-
     steps:
     - name: Checkout cross_plateform branch
       uses: actions/checkout@v4
       with:
         ref: ${{ github.event.inputs.branch || 'cross_plateform' }}
-        fetch-depth: 0  # Fetch all history for all branches
+        fetch-depth: 0
 
     - name: Get Date
       id: get-date
@@ -44,19 +43,42 @@ jobs:
         path: python/kivy/.buildozer
         key: ${{ runner.os }}-${{ steps.get-date.outputs.date }}-${{ hashFiles('python/kivy/buildozer.spec') }}
 
-    - name: Build with Buildozer
-      uses: ArtemSBulgakov/buildozer-action@v1
-      id: buildozer
+    - name: Setup Python
+      uses: actions/setup-python@v4
       with:
-        command: buildozer android debug
-        buildozer_version: master
-        workdir: python/kivy  # This is the key change!
+        python-version: '3.9'
+
+    - name: Install dependencies
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y git zip unzip openjdk-17-jdk python3-pip autoconf libtool pkg-config zlib1g-dev libncurses5-dev libncursesw5-dev libtinfo5 cmake libffi-dev libssl-dev
+        pip3 install --upgrade pip setuptools wheel
+        pip3 install buildozer cython
+
+    - name: Setup Android SDK
+      uses: android-actions/setup-android@v2
+
+    - name: Build APK with Buildozer
+      working-directory: python/kivy
+      run: |
+        # Set environment variables
+        export ANDROID_SDK_ROOT=$ANDROID_HOME
+        export PATH=$PATH:$ANDROID_HOME/tools:$ANDROID_HOME/platform-tools
+        
+        # Initialize buildozer
+        buildozer android debug
+
+    - name: Find APK
+      id: find-apk
+      run: |
+        APK_PATH=$(find python/kivy/bin -name "*.apk" -type f | head -1)
+        echo "apk_path=$APK_PATH" >> $GITHUB_OUTPUT
 
     - name: Upload artifacts
       uses: actions/upload-artifact@v4
       with:
         name: kivy-android-app
-        path: ${{ steps.buildozer.outputs.filename }}
+        path: ${{ steps.find-apk.outputs.apk_path }}
 
     - name: Create Release
       if: github.event_name == 'push' && github.ref == 'refs/heads/cross_plateform'
@@ -64,7 +86,7 @@ jobs:
       with:
         tag_name: kivy-v${{ github.run_number }}
         name: Kivy App Release ${{ github.run_number }}
-        files: ${{ steps.buildozer.outputs.filename }}
+        files: ${{ steps.find-apk.outputs.apk_path }}
         draft: false
         prerelease: false
       env:
