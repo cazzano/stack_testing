@@ -1,0 +1,122 @@
+# .github/workflows/build-kivy-universal.yml
+name: Build Kivy Android APK (Universal)
+
+on:
+  # This workflow can be triggered from any branch but always builds from cross_plateform
+  workflow_dispatch:
+    inputs:
+      source_branch:
+        description: 'Branch to build from'
+        required: true
+        default: 'cross_plateform'
+        type: choice
+        options:
+        - cross_plateform
+        - main
+        - master
+  
+  # Also trigger when cross_plateform branch changes
+  push:
+    branches: [ cross_plateform ]
+    paths: 
+      - 'python/kivy/**'
+  
+  # Schedule builds (optional - runs daily at 2 AM UTC)
+  schedule:
+    - cron: '0 2 * * *'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Determine branch to checkout
+      id: branch
+      run: |
+        if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+          echo "branch=${{ github.event.inputs.source_branch }}" >> $GITHUB_OUTPUT
+        elif [ "${{ github.event_name }}" = "push" ]; then
+          echo "branch=${{ github.ref_name }}" >> $GITHUB_OUTPUT
+        else
+          echo "branch=cross_plateform" >> $GITHUB_OUTPUT
+        fi
+
+    - name: Checkout specified branch
+      uses: actions/checkout@v4
+      with:
+        ref: ${{ steps.branch.outputs.branch }}
+        fetch-depth: 0
+
+    - name: Verify Kivy files exist
+      run: |
+        if [ ! -f "python/kivy/main.py" ]; then
+          echo "❌ main.py not found in python/kivy/"
+          echo "Available files:"
+          ls -la python/kivy/ || echo "python/kivy/ directory not found"
+          exit 1
+        fi
+        if [ ! -f "python/kivy/buildozer.spec" ]; then
+          echo "❌ buildozer.spec not found in python/kivy/"
+          echo "Available files:"
+          ls -la python/kivy/
+          exit 1
+        fi
+        echo "✅ All required files found"
+
+    - name: Get Date
+      id: get-date
+      run: |
+        echo "date=$(/bin/date -u "+%Y%m%d")" >> $GITHUB_OUTPUT
+
+    - name: Cache Buildozer global directory
+      uses: actions/cache@v3
+      with:
+        path: .buildozer_global
+        key: buildozer-global-${{ steps.branch.outputs.branch }}-${{ hashFiles('python/kivy/buildozer.spec') }}
+
+    - name: Cache Buildozer local directory
+      uses: actions/cache@v3
+      with:
+        path: python/kivy/.buildozer
+        key: ${{ runner.os }}-${{ steps.get-date.outputs.date }}-${{ steps.branch.outputs.branch }}-${{ hashFiles('python/kivy/buildozer.spec') }}
+
+    - name: Build with Buildozer
+      uses: ArtemSBulgakov/buildozer-action@v1
+      id: buildozer
+      with:
+        command: buildozer android debug
+        buildozer_version: master
+        workdir: python/kivy
+
+    - name: Upload APK Artifact
+      uses: actions/upload-artifact@v3
+      with:
+        name: kivy-android-app-${{ steps.branch.outputs.branch }}-${{ github.run_number }}
+        path: ${{ steps.buildozer.outputs.filename }}
+        retention-days: 30
+
+    - name: Get APK info
+      run: |
+        echo "APK built from branch: ${{ steps.branch.outputs.branch }}"
+        echo "APK path: ${{ steps.buildozer.outputs.filename }}"
+        ls -la ${{ steps.buildozer.outputs.filename }} || echo "APK file not found at expected location"
+
+    - name: Create Release (only for cross_plateform branch)
+      if: steps.branch.outputs.branch == 'cross_plateform' && github.event_name == 'push'
+      uses: softprops/action-gh-release@v1
+      with:
+        tag_name: kivy-v${{ github.run_number }}-${{ steps.get-date.outputs.date }}
+        name: Kivy App Release ${{ github.run_number }} (from ${{ steps.branch.outputs.branch }})
+        body: |
+          🚀 **Kivy Android App Built Successfully!**
+          
+          📱 **Source Branch:** `${{ steps.branch.outputs.branch }}`
+          🏗️ **Build Number:** `${{ github.run_number }}`
+          📅 **Build Date:** `${{ steps.get-date.outputs.date }}`
+          
+          Download the APK below and install on your Android device.
+        files: ${{ steps.buildozer.outputs.filename }}
+        draft: false
+        prerelease: false
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
