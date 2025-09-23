@@ -3,11 +3,11 @@ name: Build Kivy Android APK
 
 on:
   push:
-    branches: [ main, master ]
+    branches: [ cross_plateform ]
     paths: 
       - 'python/kivy/**'  # Only trigger when Kivy files change
   pull_request:
-    branches: [ main, master ]
+    branches: [ cross_plateform ]
     paths:
       - 'python/kivy/**'
   workflow_dispatch:  # Manual trigger
@@ -50,7 +50,7 @@ jobs:
         path: ${{ steps.buildozer.outputs.filename }}
 
     - name: Create Release
-      if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master')
+      if: github.event_name == 'push' && github.ref == 'refs/heads/cross_plateform'
       uses: softprops/action-gh-release@v1
       with:
         tag_name: kivy-v${{ github.run_number }}
