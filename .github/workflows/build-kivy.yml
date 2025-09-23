@@ -1,0 +1,62 @@
+# .github/workflows/build-kivy.yml
+name: Build Kivy Android APK
+
+on:
+  push:
+    branches: [ main, master ]
+    paths: 
+      - 'python/kivy/**'  # Only trigger when Kivy files change
+  pull_request:
+    branches: [ main, master ]
+    paths:
+      - 'python/kivy/**'
+  workflow_dispatch:  # Manual trigger
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Get Date
+      id: get-date
+      run: |
+        echo "date=$(/bin/date -u "+%Y%m%d")" >> $GITHUB_OUTPUT
+
+    - name: Cache Buildozer global directory
+      uses: actions/cache@v3
+      with:
+        path: .buildozer_global
+        key: buildozer-global-${{ hashFiles('python/kivy/buildozer.spec') }}
+
+    - uses: actions/cache@v3
+      with:
+        path: python/kivy/.buildozer
+        key: ${{ runner.os }}-${{ steps.get-date.outputs.date }}-${{ hashFiles('python/kivy/buildozer.spec') }}
+
+    - name: Build with Buildozer
+      uses: ArtemSBulgakov/buildozer-action@v1
+      id: buildozer
+      with:
+        command: buildozer android debug
+        buildozer_version: master
+        workdir: python/kivy  # This is the key change!
+
+    - name: Upload artifacts
+      uses: actions/upload-artifact@v3
+      with:
+        name: kivy-android-app
+        path: ${{ steps.buildozer.outputs.filename }}
+
+    - name: Create Release
+      if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master')
+      uses: softprops/action-gh-release@v1
+      with:
+        tag_name: kivy-v${{ github.run_number }}
+        name: Kivy App Release ${{ github.run_number }}
+        files: ${{ steps.buildozer.outputs.filename }}
+        draft: false
+        prerelease: false
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

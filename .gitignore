@@ -1,1 +1,9 @@
 **/.venv/
+# Virtual environments
+**/.buildozer/
+**/.buildozer_global/
+
+# Build outputs
+*.apk
+*.aab
+bin/
