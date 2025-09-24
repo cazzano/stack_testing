@@ -50,7 +50,8 @@ jobs:
           wget \
           curl \
           which \
-          sudo
+          sudo \
+          expect
         
         # Create a regular user for building (AUR best practice)
         useradd -m -G wheel builduser
@@ -179,16 +180,20 @@ jobs:
         
         [android]
         android.permissions = INTERNET,WRITE_EXTERNAL_STORAGE,READ_EXTERNAL_STORAGE
-        android.api = 31
+        android.api = 33
         android.minapi = 21
         android.ndk = 25b
-        android.sdk = 31
+        android.sdk = 33
         android.ndk_api = 21
         android.archs = arm64-v8a
         android.accept_sdk_license = True
         android.skip_update = False
         android.gradle_dependencies = 
         android.add_compile_options = 
+        
+        # Auto-accept all Android SDK licenses
+        android.add_packaging_options = pickFirst **/libc++_shared.so, pickFirst **/libjsc.so
+        android.gradle_repositories = google(), mavenCentral()
         EOF
           
           # Create a simple main.py if none exists
@@ -242,6 +247,10 @@ jobs:
           export VIRTUAL_ENV=\$HOME/venv
           export JAVA_HOME=/usr/lib/jvm/java-17-openjdk
           
+          # Set Android SDK environment variables
+          export ANDROID_HOME=\$HOME/.buildozer/android/platform/android-sdk
+          export ANDROID_SDK_ROOT=\$ANDROID_HOME
+          
           echo '=== Starting Arch Linux APK Build ==='
           echo 'Java version:' && java -version
           echo 'Python version:' && python --version
@@ -252,14 +261,38 @@ jobs:
           echo 'Available disk space:'
           df -h
           
-          echo '=== Running buildozer android debug ==='
-          # Set buildozer to use our custom paths
-          export BUILDOZER_WARN_ON_ROOT=0
+          echo '=== Pre-accepting Android SDK licenses ==='
+          # Create the licenses directory and accept all known licenses
+          mkdir -p \$HOME/.buildozer/android/platform/android-sdk/licenses
           
-          buildozer android debug --verbose || { 
+          # Accept all standard Android SDK licenses
+          echo '24333f8a63b6825ea9c5514f83c2829b004d1fee' > \$HOME/.buildozer/android/platform/android-sdk/licenses/android-sdk-license
+          echo '84831b9409646a918e30573bab4c9c91346d8abd' >> \$HOME/.buildozer/android/platform/android-sdk/licenses/android-sdk-license
+          echo 'd975f751698a77b662f1254ddbeed3901e976f5a' >> \$HOME/.buildozer/android/platform/android-sdk/licenses/android-sdk-license
+          
+          echo '504667f4c0de7af1a06de9f4b1727b84351f2910' > \$HOME/.buildozer/android/platform/android-sdk/licenses/android-sdk-preview-license
+          echo 'e9acab5b5fbb560a72cfaecce8946896ff6aab9d' >> \$HOME/.buildozer/android/platform/android-sdk/licenses/android-sdk-preview-license
+          
+          echo '33b6a2b64607f11b759f320ef9dff4ae5c47d97a' > \$HOME/.buildozer/android/platform/android-sdk/licenses/google-gdk-license
+          echo '859f317696f67ef3d7f30a50a5560e7834b43903' > \$HOME/.buildozer/android/platform/android-sdk/licenses/intel-android-extra-license
+          
+          # Build tools license
+          echo '8933bad161af4178b1185d1a37fbf41ea5269c55' > \$HOME/.buildozer/android/platform/android-sdk/licenses/android-sdk-arm-dbt-license
+          
+          echo 'Licenses pre-accepted in:' && ls -la \$HOME/.buildozer/android/platform/android-sdk/licenses/ 2>/dev/null || echo 'Licenses dir will be created during build'
+          
+          echo '=== Running buildozer android debug ==='
+          # Set buildozer to use our custom paths and auto-accept licenses
+          export BUILDOZER_WARN_ON_ROOT=0
+          export ANDROID_ACCEPT_LICENSE=y
+          
+          # Use expect to auto-accept any remaining license prompts
+          buildozer android debug --verbose 2>&1 | tee build.log || { 
             echo 'Build failed, checking for partial results...'; 
             find . -name '*.apk' -type f || echo 'No APK files found';
             ls -la bin/ 2>/dev/null || echo 'No bin directory';
+            echo '=== Last 100 lines of build log ===';
+            tail -100 build.log 2>/dev/null || echo 'No build log';
             echo '=== Last 50 lines of .buildozer logs ===';
             find .buildozer -name '*.log' -exec tail -50 {} \; 2>/dev/null || echo 'No log files';
             exit 1;
