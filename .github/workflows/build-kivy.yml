@@ -1,4 +1,4 @@
-name: Build Kivy Android APK from Cross Platform Branch
+name: Build Kivy Android APK (Docker Alternative)
 
 on:
   push:
@@ -16,39 +16,77 @@ on:
 jobs:
   build-android:
     runs-on: ubuntu-latest
+    container:
+      image: ubuntu:20.04
+      env:
+        DEBIAN_FRONTEND: noninteractive
     
     steps:
-    - name: Checkout main branch (for workflow files)
+    - name: Install system dependencies
+      run: |
+        apt-get update
+        apt-get install -y \
+          build-essential \
+          git \
+          python3.11 \
+          python3.11-dev \
+          python3.11-venv \
+          python3-pip \
+          openjdk-17-jdk \
+          autoconf \
+          libtool \
+          pkg-config \
+          zlib1g-dev \
+          libncurses5-dev \
+          libncursesw5-dev \
+          libtinfo5 \
+          cmake \
+          libffi-dev \
+          libssl-dev \
+          unzip \
+          zip \
+          software-properties-common
+        
+        # Add deadsnakes PPA for Python 3.11
+        add-apt-repository ppa:deadsnakes/ppa -y
+        apt-get update
+        apt-get install -y python3.11 python3.11-dev python3.11-venv
+    
+    - name: Checkout main branch
       uses: actions/checkout@v4
       with:
         ref: main
         path: main-branch
     
-    - name: Checkout cross_plateform branch (for source code)
+    - name: Checkout cross_plateform branch
       uses: actions/checkout@v4
       with:
         ref: ${{ github.event.inputs.branch || 'cross_plateform' }}
         path: source-code
     
-    - name: Copy source code to build directory
+    - name: Setup build environment
       run: |
         mkdir -p build-workspace
         cp -r source-code/python/kivy/* build-workspace/
-        ls -la build-workspace/
-        echo "Contents of build workspace:"
-        find build-workspace -type f -name "*.py" -o -name "*.spec"
-    
-    - name: Verify required files exist
-      run: |
-        if [ ! -f "build-workspace/main.py" ]; then
-          echo "Error: main.py not found in build-workspace/"
-          echo "Available files:"
-          ls -la build-workspace/
-          exit 1
-        fi
         
+        # Set Java environment
+        export JAVA_HOME=/usr/lib/jvm/java-17-openjdk-amd64
+        echo "JAVA_HOME=/usr/lib/jvm/java-17-openjdk-amd64" >> $GITHUB_ENV
+        
+        # Create Python virtual environment
+        python3.11 -m venv build-venv
+        source build-venv/bin/activate
+        
+        # Install buildozer
+        pip install --upgrade pip
+        pip install buildozer==1.5.0 cython==0.29.36
+        
+        # Verify files
+        ls -la build-workspace/
+    
+    - name: Create default buildozer.spec if missing
+      run: |
         if [ ! -f "build-workspace/buildozer.spec" ]; then
-          echo "Warning: buildozer.spec not found, will create a default one"
           cat > build-workspace/buildozer.spec << 'EOF'
         [app]
         title = My Simple Kivy App
@@ -72,87 +110,27 @@ jobs:
         android.ndk = 25b
         android.sdk = 31
         android.ndk_api = 21
-        android.archs = arm64-v8a, armeabi-v7a
+        android.archs = arm64-v8a
         android.accept_sdk_license = True
         android.skip_update = False
         android.allow_backup = True
         EOF
         fi
-        
-        echo "Final buildozer.spec:"
-        cat build-workspace/buildozer.spec
     
-    - name: Build APK with Buildozer Docker
-      uses: docker://kivy/buildozer:latest
-      with:
-        entrypoint: /bin/bash
-        args: >-
-          -c "
-          cd /github/workspace/build-workspace &&
-          echo 'Working directory contents:' &&
-          ls -la &&
-          echo 'Building APK...' &&
-          buildozer android debug &&
-          echo 'Build completed! Contents of bin directory:' &&
-          ls -la bin/ || echo 'No bin directory found'
-          "
-    
-    - name: List all generated files
-      if: always()
+    - name: Build APK
       run: |
-        echo "=== Build workspace contents after build ==="
-        find build-workspace -name "*.apk" -o -name "bin" -type d || echo "No APK or bin directory found"
+        source build-venv/bin/activate
+        cd build-workspace
         
-        echo "=== Looking for APK files ==="
-        find . -name "*.apk" -type f || echo "No APK files found anywhere"
+        echo "Building APK..."
+        buildozer android debug
         
-        echo "=== Full directory structure ==="
-        ls -la build-workspace/
-        
-        if [ -d "build-workspace/bin" ]; then
-          echo "=== Contents of bin directory ==="
-          ls -la build-workspace/bin/
-        fi
+        echo "Build completed!"
+        ls -la bin/ || echo "No bin directory found"
     
-    - name: Copy APK to accessible location
-      run: |
-        mkdir -p artifacts
-        if [ -d "build-workspace/bin" ]; then
-          cp build-workspace/bin/*.apk artifacts/ 2>/dev/null || echo "No APK files to copy from bin/"
-        fi
-        
-        # Search for APK files anywhere in build-workspace
-        find build-workspace -name "*.apk" -exec cp {} artifacts/ \; 2>/dev/null || echo "No APK files found"
-        
-        # If still no APK, create a status file
-        if [ -z "$(ls -A artifacts/)" ]; then
-          echo "Build may have failed or APK not generated" > artifacts/build-status.txt
-          echo "Check the build logs above for errors" >> artifacts/build-status.txt
-        fi
-        
-        echo "=== Final artifacts directory ==="
-        ls -la artifacts/
-    
-    - name: Upload APK Artifact
+    - name: Upload APK
       uses: actions/upload-artifact@v4
       with:
         name: kivy-android-apk-${{ github.run_number }}
-        path: artifacts/
-        retention-days: 30
-        if-no-files-found: warn
-    
-    - name: Build Summary
-      if: always()
-      run: |
-        echo "## Build Summary" >> $GITHUB_STEP_SUMMARY
-        echo "- **Branch Built:** ${{ github.event.inputs.branch || 'cross_plateform' }}" >> $GITHUB_STEP_SUMMARY
-        echo "- **Source Path:** /python/kivy/" >> $GITHUB_STEP_SUMMARY
-        echo "- **Build Status:** $([ -f artifacts/*.apk ] && echo "✅ Success" || echo "❌ Failed")" >> $GITHUB_STEP_SUMMARY
-        
-        if [ -f artifacts/*.apk ]; then
-          echo "- **APK Generated:** ✅" >> $GITHUB_STEP_SUMMARY
-          echo "- **Download:** Check the Artifacts section below" >> $GITHUB_STEP_SUMMARY
-        else
-          echo "- **APK Generated:** ❌" >> $GITHUB_STEP_SUMMARY
-          echo "- **Note:** Check build logs for errors" >> $GITHUB_STEP_SUMMARY
-        fi
+        path: build-workspace/bin/*.apk
+        if-no-files-found: error
