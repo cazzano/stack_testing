@@ -82,14 +82,18 @@ jobs:
     
     - name: Set up build environment
       run: |
-        # Fix ownership for the builduser
-        chown -R builduser:builduser /github/workspace
-        chown -R builduser:builduser /github/home
+        # Find the actual workspace directory
+        WORKSPACE_DIR=$(pwd)
+        echo "Current workspace: $WORKSPACE_DIR"
+        
+        # Fix ownership for the builduser (use actual paths)
+        chown -R builduser:builduser "$WORKSPACE_DIR"
+        chown -R builduser:builduser /home/builduser 2>/dev/null || echo "builduser home already exists"
         
         # Set environment variables
         export JAVA_HOME=/usr/lib/jvm/java-17-openjdk
-        export ANDROID_HOME=/github/home/.buildozer/android/platform/android-sdk
-        export ANDROID_NDK_HOME=/github/home/.buildozer/android/platform/android-ndk-r25b
+        export ANDROID_HOME=/home/builduser/.buildozer/android/platform/android-sdk
+        export ANDROID_NDK_HOME=/home/builduser/.buildozer/android/platform/android-ndk-r25b
         export PATH=$PATH:$ANDROID_HOME/tools:$ANDROID_HOME/platform-tools
         
         echo "JAVA_HOME=$JAVA_HOME" >> $GITHUB_ENV
@@ -109,8 +113,9 @@ jobs:
     
     - name: Install Python dependencies (as builduser)
       run: |
+        WORKSPACE_DIR=$(pwd)
         su - builduser -c "
-          cd /github/workspace
+          cd '$WORKSPACE_DIR'
           
           # Install buildozer and dependencies
           python -m pip install --user --upgrade pip wheel setuptools
@@ -130,8 +135,9 @@ jobs:
     
     - name: Prepare build workspace
       run: |
+        WORKSPACE_DIR=$(pwd)
         su - builduser -c "
-          cd /github/workspace
+          cd '$WORKSPACE_DIR'
           export PATH=\$HOME/.local/bin:\$PATH
           
           mkdir -p build-workspace
@@ -209,8 +215,9 @@ jobs:
     
     - name: Build Android APK
       run: |
+        WORKSPACE_DIR=$(pwd)
         su - builduser -c "
-          cd /github/workspace/build-workspace
+          cd '$WORKSPACE_DIR/build-workspace'
           export PATH=\$HOME/.local/bin:\$PATH
           export JAVA_HOME=/usr/lib/jvm/java-17-openjdk
           
@@ -244,8 +251,9 @@ jobs:
     
     - name: Verify APK generation
       run: |
+        WORKSPACE_DIR=$(pwd)
         su - builduser -c "
-          cd /github/workspace/build-workspace
+          cd '$WORKSPACE_DIR/build-workspace'
           
           echo '=== APK Verification ==='
           APK_COUNT=\$(find . -name '*.apk' -type f | wc -l)
@@ -286,6 +294,7 @@ jobs:
     - name: Final build summary
       if: always()
       run: |
+        WORKSPACE_DIR=$(pwd)
         echo "## 🏛️ Arch Linux Build Summary" >> $GITHUB_STEP_SUMMARY
         echo "" >> $GITHUB_STEP_SUMMARY
         echo "- **Build Method:** Arch Linux Container (latest)" >> $GITHUB_STEP_SUMMARY
@@ -296,8 +305,8 @@ jobs:
         echo "- **Container:** archlinux:latest" >> $GITHUB_STEP_SUMMARY
         echo "" >> $GITHUB_STEP_SUMMARY
         
-        if su - builduser -c "find /github/workspace/build-workspace -name '*.apk' -type f" | grep -q .; then
-          APK_SIZE=$(su - builduser -c "find /github/workspace/build-workspace -name '*.apk' -type f -exec ls -lh {} \;" | awk '{print $5}' | head -1)
+        if su - builduser -c "find '$WORKSPACE_DIR/build-workspace' -name '*.apk' -type f" | grep -q .; then
+          APK_SIZE=$(su - builduser -c "find '$WORKSPACE_DIR/build-workspace' -name '*.apk' -type f -exec ls -lh {} \;" | awk '{print $5}' | head -1)
           echo "- **Status:** ✅ Build Successful" >> $GITHUB_STEP_SUMMARY
           echo "- **APK Generated:** ✅ Yes (Size: $APK_SIZE)" >> $GITHUB_STEP_SUMMARY
           echo "- **Download:** Available in artifacts section below" >> $GITHUB_STEP_SUMMARY
