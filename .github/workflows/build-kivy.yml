@@ -88,25 +88,73 @@ jobs:
             echo 'Permissions check:' && ls -la /buildozer/
           "
     
-    - name: Build APK with unsuitable001/buildozer3
+    - name: Build APK with unsuitable001/buildozer3 (with fixes)
       run: |
-        echo "Starting APK build with unsuitable001/buildozer3..."
+        echo "Starting APK build with fixes for NDK download issues..."
         
+        # Create a fixed buildozer.spec with pre-downloaded NDK path
+        cat > build-workspace/buildozer.spec << 'EOF'
+        [app]
+        title = My Simple Kivy App
+        package.name = simplekivyapp
+        package.domain = org.example
+        source.dir = .
+        source.include_exts = py,png,jpg,kv,atlas
+        version = 0.1
+        requirements = python3,kivy==2.0.0
+        orientation = portrait
+        fullscreen = 0
+        
+        [buildozer]
+        log_level = 2
+        warn_on_root = 0
+        
+        [android]
+        android.permissions = INTERNET
+        android.api = 29
+        android.minapi = 21
+        android.ndk = 21b
+        android.sdk = 29
+        android.ndk_api = 21
+        android.archs = armeabi-v7a
+        android.accept_sdk_license = True
+        android.skip_update = True
+        EOF
+        
+        echo "Updated buildozer.spec for compatibility:"
+        cat build-workspace/buildozer.spec
+        
+        # Try building with older, more stable settings
         docker run --rm \
           -v $(pwd)/build-workspace:/buildozer \
           -w /buildozer \
           -e BUILDOZER_WARN_ON_ROOT=0 \
+          -e ANDROID_HOME=/opt/android-sdk \
+          -e ANDROID_NDK_HOME=/opt/android-ndk \
+          --network=host \
           unsuitable001/buildozer3:latest \
           /bin/bash -c "
-            echo '=== Starting build process ===' &&
-            echo 'Working directory:' && pwd &&
-            echo 'Directory contents:' && ls -la &&
-            echo 'Buildozer spec check:' && cat buildozer.spec | head -20 &&
-            echo '=== Running buildozer android debug ===' &&
-            buildozer android debug &&
-            echo '=== Build completed ===' &&
-            echo 'Checking for generated APK:' &&
-            find . -name '*.apk' -type f || echo 'No APK files found' &&
+            echo '=== Environment Setup ===' &&
+            export PATH=\$PATH:/opt/android-sdk/tools:/opt/android-sdk/platform-tools &&
+            echo 'Python version:' && python3 --version &&
+            echo 'Available space:' && df -h &&
+            echo 'Network connectivity:' && ping -c 2 google.com || echo 'Network test failed' &&
+            
+            echo '=== Pre-build Setup ===' &&
+            # Create buildozer directories with proper permissions
+            mkdir -p ~/.buildozer &&
+            chmod -R 777 ~/.buildozer &&
+            
+            echo '=== Starting Build ===' &&
+            timeout 1800 buildozer android debug || {
+              echo 'Build failed or timed out, checking partial results...'
+              find . -name '*.apk' -type f || echo 'No APK found'
+              ls -la bin/ 2>/dev/null || echo 'No bin directory'
+              exit 1
+            } &&
+            
+            echo '=== Build Success ===' &&
+            find . -name '*.apk' -type f &&
             ls -la bin/ || echo 'No bin directory found'
           "
     
