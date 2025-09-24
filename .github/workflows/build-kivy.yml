@@ -111,26 +111,40 @@ jobs:
         restore-keys: |
           ${{ runner.os }}-arch-buildozer-
     
-    - name: Install Python dependencies (as builduser)
+    - name: Set up Python venv and install dependencies
       run: |
         WORKSPACE_DIR=$(pwd)
         su - builduser -c "
-          cd '$WORKSPACE_DIR'
+          cd ~
           
-          # Install buildozer and dependencies
-          python -m pip install --user --upgrade pip wheel setuptools
-          python -m pip install --user buildozer==1.5.0 cython==0.29.36
-          python -m pip install --user colorama appdirs sh jinja2 six requests
+          # Create virtual environment in home directory
+          echo '=== Creating Python venv ==='
+          python -m venv ~/venv
           
-          # Add user pip bin to PATH
-          echo 'export PATH=\$HOME/.local/bin:\$PATH' >> ~/.bashrc
-          export PATH=\$HOME/.local/bin:\$PATH
+          # Create symbolic links for easy access
+          echo '=== Creating symbolic links ==='
+          ln -sf ~/venv/bin/python ~/python
+          ln -sf ~/venv/bin/pip ~/pip
+          
+          # Activate venv and install dependencies
+          echo '=== Installing Python packages ==='
+          source ~/venv/bin/activate
+          pip install --upgrade pip wheel setuptools
+          pip install buildozer==1.5.0 cython==0.29.36
+          pip install colorama appdirs sh jinja2 six requests
+          
+          # Add venv to PATH permanently
+          echo 'export PATH=\$HOME/venv/bin:\$PATH' >> ~/.bashrc
+          echo 'export VIRTUAL_ENV=\$HOME/venv' >> ~/.bashrc
           
           # Verify installations
-          echo '=== Python Environment ==='
+          echo '=== Python Environment Verification ==='
           python --version
           pip --version
-          buildozer version || echo 'Buildozer will be available after PATH update'
+          buildozer version
+          which buildozer
+          which python
+          which pip
         "
     
     - name: Prepare build workspace
@@ -138,7 +152,10 @@ jobs:
         WORKSPACE_DIR=$(pwd)
         su - builduser -c "
           cd '$WORKSPACE_DIR'
-          export PATH=\$HOME/.local/bin:\$PATH
+          
+          # Source the venv environment
+          source ~/.bashrc
+          export PATH=\$HOME/venv/bin:\$PATH
           
           mkdir -p build-workspace
           cp -r source-code/python/kivy/* build-workspace/ 2>/dev/null || echo 'No kivy directory found, using root'
@@ -218,13 +235,19 @@ jobs:
         WORKSPACE_DIR=$(pwd)
         su - builduser -c "
           cd '$WORKSPACE_DIR/build-workspace'
-          export PATH=\$HOME/.local/bin:\$PATH
+          
+          # Ensure venv is active
+          source ~/.bashrc
+          export PATH=\$HOME/venv/bin:\$PATH
+          export VIRTUAL_ENV=\$HOME/venv
           export JAVA_HOME=/usr/lib/jvm/java-17-openjdk
           
           echo '=== Starting Arch Linux APK Build ==='
           echo 'Java version:' && java -version
           echo 'Python version:' && python --version
           echo 'Buildozer version:' && buildozer version
+          echo 'Python path:' && which python
+          echo 'Buildozer path:' && which buildozer
           echo 'Working directory:' && pwd
           echo 'Available disk space:'
           df -h
@@ -254,6 +277,8 @@ jobs:
         WORKSPACE_DIR=$(pwd)
         su - builduser -c "
           cd '$WORKSPACE_DIR/build-workspace'
+          source ~/.bashrc
+          export PATH=\$HOME/venv/bin:\$PATH
           
           echo '=== APK Verification ==='
           APK_COUNT=\$(find . -name '*.apk' -type f | wc -l)
