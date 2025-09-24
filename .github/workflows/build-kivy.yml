@@ -1,4 +1,4 @@
-name: Build APK - Buildozer Action (Fixed)
+name: Build APK - Arch Linux (Container)
 
 on:
   push:
@@ -12,175 +12,337 @@ on:
         type: string
 
 jobs:
-  build-android-buildozer:
+  build-android-arch:
     runs-on: ubuntu-latest
+    container:
+      image: archlinux:latest
+      options: --privileged
     timeout-minutes: 90
     
     steps:
+    - name: Initialize Arch Linux environment
+      run: |
+        # Update system and install base packages
+        pacman -Syu --noconfirm
+        pacman -S --noconfirm \
+          base-devel \
+          git \
+          python \
+          python-pip \
+          python-setuptools \
+          python-wheel \
+          jdk17-openjdk \
+          cmake \
+          ninja \
+          pkg-config \
+          autoconf \
+          automake \
+          libtool \
+          zlib \
+          ncurses \
+          openssl \
+          libffi \
+          gstreamer \
+          gst-plugins-base \
+          ccache \
+          unzip \
+          zip \
+          wget \
+          curl \
+          which \
+          sudo \
+          expect
+        
+        # Create a regular user for building (AUR best practice)
+        useradd -m -G wheel builduser
+        echo "builduser ALL=(ALL) NOPASSWD: ALL" >> /etc/sudoers
+        
+        # Set up environment
+        echo "JAVA_HOME=/usr/lib/jvm/java-17-openjdk" >> /etc/environment
+        
+        # Display system info
+        echo "=== Arch Linux System Info ==="
+        uname -a
+        pacman --version
+        python --version
+        java -version
+        
+    - name: Free up disk space
+      run: |
+        # Clean package cache and unnecessary files
+        pacman -Scc --noconfirm
+        rm -rf /var/cache/pacman/pkg/*
+        rm -rf /tmp/*
+        df -h
+    
     - name: Checkout source code
       uses: actions/checkout@v4
       with:
         ref: ${{ github.event.inputs.branch || 'cross_plateform' }}
         path: source-code
     
-    - name: Free up disk space
+    - name: Set up build environment
       run: |
-        # Clean up unnecessary files to free space
-        sudo rm -rf /usr/share/dotnet
-        sudo rm -rf /opt/ghc
-        sudo rm -rf /usr/local/share/boost
-        sudo rm -rf "$AGENT_TOOLSDIRECTORY"
-        docker system prune -af
-        df -h
+        # Find the actual workspace directory
+        WORKSPACE_DIR=$(pwd)
+        echo "Current workspace: $WORKSPACE_DIR"
+        
+        # Fix ownership for the builduser (use actual paths)
+        chown -R builduser:builduser "$WORKSPACE_DIR"
+        chown -R builduser:builduser /home/builduser 2>/dev/null || echo "builduser home already exists"
+        
+        # Set environment variables
+        export JAVA_HOME=/usr/lib/jvm/java-17-openjdk
+        export ANDROID_HOME=/home/builduser/.buildozer/android/platform/android-sdk
+        export ANDROID_NDK_HOME=/home/builduser/.buildozer/android/platform/android-ndk-r25b
+        export PATH=$PATH:$ANDROID_HOME/tools:$ANDROID_HOME/platform-tools
+        
+        echo "JAVA_HOME=$JAVA_HOME" >> $GITHUB_ENV
+        echo "ANDROID_HOME=$ANDROID_HOME" >> $GITHUB_ENV
+        echo "ANDROID_NDK_HOME=$ANDROID_NDK_HOME" >> $GITHUB_ENV
+        echo "PATH=$PATH:$ANDROID_HOME/tools:$ANDROID_HOME/platform-tools" >> $GITHUB_ENV
+    
+    - name: Cache buildozer directories
+      uses: actions/cache@v3
+      with:
+        path: |
+          ~/.buildozer
+          .buildozer
+        key: ${{ runner.os }}-arch-buildozer-${{ hashFiles('**/buildozer.spec') }}
+        restore-keys: |
+          ${{ runner.os }}-arch-buildozer-
+    
+    - name: Set up Python venv and install dependencies
+      run: |
+        WORKSPACE_DIR=$(pwd)
+        su - builduser -c "
+          cd ~
+          
+          # Create virtual environment in home directory
+          echo '=== Creating Python venv ==='
+          python -m venv ~/venv
+          
+          # Create symbolic links for easy access
+          echo '=== Creating symbolic links ==='
+          ln -sf ~/venv/bin/python ~/python
+          ln -sf ~/venv/bin/pip ~/pip
+          
+          # Activate venv and install dependencies
+          echo '=== Installing Python packages ==='
+          source ~/venv/bin/activate
+          pip install --upgrade pip wheel setuptools
+          pip install buildozer==1.5.0 cython==0.29.36
+          pip install colorama appdirs sh jinja2 six requests
+          
+          # Add venv to PATH permanently
+          echo 'export PATH=\$HOME/venv/bin:\$PATH' >> ~/.bashrc
+          echo 'export VIRTUAL_ENV=\$HOME/venv' >> ~/.bashrc
+          
+          # Verify installations
+          echo '=== Python Environment Verification ==='
+          python --version
+          pip --version
+          buildozer version
+          which buildozer
+          which python
+          which pip
+        "
     
     - name: Prepare build workspace
       run: |
-        # Create build workspace in the expected structure
-        mkdir -p build-workspace
+        WORKSPACE_DIR=$(pwd)
+        su - builduser -c "
+          cd '$WORKSPACE_DIR'
+          
+          # Source the venv environment
+          source ~/.bashrc
+          export PATH=\$HOME/venv/bin:\$PATH
+          
+          mkdir -p build-workspace
+          cp -r source-code/python/kivy/* build-workspace/ 2>/dev/null || echo 'No kivy directory found, using root'
+          
+          # Create optimized buildozer.spec for Arch Linux
+          cat > build-workspace/buildozer.spec << 'EOF'
+        [app]
+        title = My Arch Kivy App
+        package.name = archkivyapp
+        package.domain = org.archlinux
+        source.dir = .
+        source.include_exts = py,png,jpg,kv,atlas,txt,md
+        version = 0.1
+        requirements = python3,kivy==2.1.0,certifi
+        orientation = portrait
+        fullscreen = 0
         
-        # Copy Kivy project files to build workspace
-        if [ -d "source-code/python/kivy" ]; then
-          cp -r source-code/python/kivy/* build-workspace/
-        else
-          cp -r source-code/* build-workspace/
-        fi
+        [buildozer]
+        log_level = 2
+        warn_on_root = 0
         
-        # Create optimized buildozer.spec
-        cat > build-workspace/buildozer.spec << 'EOF'
-[app]
-title = My Kivy App
-package.name = kivyapp
-package.domain = org.example
-source.dir = .
-source.include_exts = py,png,jpg,kv,atlas,txt,md,json
-version = 0.1
-requirements = python3,kivy==2.1.0,certifi
-orientation = portrait
-fullscreen = 0
-
-[buildozer]
-log_level = 2
-warn_on_root = 0
-
-[android]
-android.permissions = INTERNET,WRITE_EXTERNAL_STORAGE,READ_EXTERNAL_STORAGE
-android.api = 33
-android.minapi = 21
-android.ndk = 25b
-android.sdk = 33
-android.ndk_api = 21
-android.archs = arm64-v8a
-android.accept_sdk_license = True
-android.skip_update = False
-android.gradle_dependencies = 
-android.add_compile_options = 
-
-# Auto-accept all Android SDK licenses
-android.add_packaging_options = pickFirst **/libc++_shared.so, pickFirst **/libjsc.so
-android.gradle_repositories = google(), mavenCentral()
-EOF
+        [android]
+        android.permissions = INTERNET,WRITE_EXTERNAL_STORAGE,READ_EXTERNAL_STORAGE
+        android.api = 33
+        android.minapi = 21
+        android.ndk = 25b
+        android.sdk = 33
+        android.ndk_api = 21
+        android.archs = arm64-v8a
+        android.accept_sdk_license = True
+        android.skip_update = False
+        android.gradle_dependencies = 
+        android.add_compile_options = 
         
-        # Create main.py if it doesn't exist
-        if [ ! -f build-workspace/main.py ]; then
-          cat > build-workspace/main.py << 'EOF'
-from kivy.app import App
-from kivy.uix.label import Label
-from kivy.uix.boxlayout import BoxLayout
-import platform
-
-class KivyApp(App):
-    def build(self):
-        layout = BoxLayout(orientation='vertical', padding=20, spacing=20)
+        # Auto-accept all Android SDK licenses
+        android.add_packaging_options = pickFirst **/libc++_shared.so, pickFirst **/libjsc.so
+        android.gradle_repositories = google(), mavenCentral()
+        EOF
+          
+          # Create a simple main.py if none exists
+          if [ ! -f build-workspace/main.py ]; then
+            cat > build-workspace/main.py << 'EOF'
+        from kivy.app import App
+        from kivy.uix.label import Label
+        from kivy.uix.boxlayout import BoxLayout
+        import platform
         
-        title = Label(
-            text='Hello from Kivy!',
-            font_size='24sp',
-            size_hint_y=None,
-            height='60dp'
-        )
+        class ArchKivyApp(App):
+            def build(self):
+                layout = BoxLayout(orientation='vertical', padding=20, spacing=20)
+                
+                title = Label(
+                    text='Hello from Arch Linux!',
+                    font_size='24sp',
+                    size_hint_y=None,
+                    height='60dp'
+                )
+                
+                info = Label(
+                    text=f'Built on: {platform.system()} {platform.release()}\\nPython: {platform.python_version()}\\nArchitecture: {platform.machine()}',
+                    font_size='16sp',
+                    halign='center'
+                )
+                info.bind(size=info.setter('text_size'))
+                
+                layout.add_widget(title)
+                layout.add_widget(info)
+                return layout
         
-        info = Label(
-            text=f'Built with Buildozer Action\\nPython: {platform.python_version()}\\nPlatform: {platform.system()}',
-            font_size='16sp',
-            halign='center'
-        )
-        info.bind(size=info.setter('text_size'))
-        
-        layout.add_widget(title)
-        layout.add_widget(info)
-        return layout
-
-if __name__ == '__main__':
-    KivyApp().run()
-EOF
-        fi
-        
-        echo 'Build workspace prepared:'
-        ls -la build-workspace/
-        echo 'buildozer.spec content:'
-        cat build-workspace/buildozer.spec
+        if __name__ == '__main__':
+            ArchKivyApp().run()
+        EOF
+          fi
+          
+          echo 'Build workspace prepared:'
+          ls -la build-workspace/
+        "
     
-    - name: Cache Buildozer global directory  
-      uses: actions/cache@v3
-      with:
-        path: .buildozer_global
-        key: buildozer-global-${{ hashFiles('**/buildozer.spec') }}
-        restore-keys: |
-          buildozer-global-
-    
-    - name: Build Android APK with Buildozer Action
-      uses: ArtemSBulgakov/buildozer-action@v1
-      id: buildozer
-      with:
-        command: buildozer android debug
-        repository_root: .
-        workdir: build-workspace
-        buildozer_version: stable
-      env:
-        APP_ANDROID_ARCH: arm64-v8a
+    - name: Build Android APK
+      run: |
+        WORKSPACE_DIR=$(pwd)
+        su - builduser -c "
+          cd '$WORKSPACE_DIR/build-workspace'
+          
+          # Ensure venv is active
+          source ~/.bashrc
+          export PATH=\$HOME/venv/bin:\$PATH
+          export VIRTUAL_ENV=\$HOME/venv
+          export JAVA_HOME=/usr/lib/jvm/java-17-openjdk
+          
+          # Set Android SDK environment variables
+          export ANDROID_HOME=\$HOME/.buildozer/android/platform/android-sdk
+          export ANDROID_SDK_ROOT=\$ANDROID_HOME
+          
+          echo '=== Starting Arch Linux APK Build ==='
+          echo 'Java version:' && java -version
+          echo 'Python version:' && python --version
+          echo 'Buildozer version:' && buildozer version
+          echo 'Python path:' && which python
+          echo 'Buildozer path:' && which buildozer
+          echo 'Working directory:' && pwd
+          echo 'Available disk space:'
+          df -h
+          
+          echo '=== Pre-accepting Android SDK licenses ==='
+          # Create the licenses directory and accept all known licenses
+          mkdir -p \$HOME/.buildozer/android/platform/android-sdk/licenses
+          
+          # Accept all standard Android SDK licenses
+          echo '24333f8a63b6825ea9c5514f83c2829b004d1fee' > \$HOME/.buildozer/android/platform/android-sdk/licenses/android-sdk-license
+          echo '84831b9409646a918e30573bab4c9c91346d8abd' >> \$HOME/.buildozer/android/platform/android-sdk/licenses/android-sdk-license
+          echo 'd975f751698a77b662f1254ddbeed3901e976f5a' >> \$HOME/.buildozer/android/platform/android-sdk/licenses/android-sdk-license
+          
+          echo '504667f4c0de7af1a06de9f4b1727b84351f2910' > \$HOME/.buildozer/android/platform/android-sdk/licenses/android-sdk-preview-license
+          echo 'e9acab5b5fbb560a72cfaecce8946896ff6aab9d' >> \$HOME/.buildozer/android/platform/android-sdk/licenses/android-sdk-preview-license
+          
+          echo '33b6a2b64607f11b759f320ef9dff4ae5c47d97a' > \$HOME/.buildozer/android/platform/android-sdk/licenses/google-gdk-license
+          echo '859f317696f67ef3d7f30a50a5560e7834b43903' > \$HOME/.buildozer/android/platform/android-sdk/licenses/intel-android-extra-license
+          
+          # Build tools license
+          echo '8933bad161af4178b1185d1a37fbf41ea5269c55' > \$HOME/.buildozer/android/platform/android-sdk/licenses/android-sdk-arm-dbt-license
+          
+          echo 'Licenses pre-accepted in:' && ls -la \$HOME/.buildozer/android/platform/android-sdk/licenses/ 2>/dev/null || echo 'Licenses dir will be created during build'
+          
+          echo '=== Running buildozer android debug ==='
+          # Set buildozer to use our custom paths and auto-accept licenses
+          export BUILDOZER_WARN_ON_ROOT=0
+          export ANDROID_ACCEPT_LICENSE=y
+          
+          # Use expect to auto-accept any remaining license prompts
+          buildozer android debug --verbose 2>&1 | tee build.log || { 
+            echo 'Build failed, checking for partial results...'; 
+            find . -name '*.apk' -type f || echo 'No APK files found';
+            ls -la bin/ 2>/dev/null || echo 'No bin directory';
+            echo '=== Last 100 lines of build log ===';
+            tail -100 build.log 2>/dev/null || echo 'No build log';
+            echo '=== Last 50 lines of .buildozer logs ===';
+            find .buildozer -name '*.log' -exec tail -50 {} \; 2>/dev/null || echo 'No log files';
+            exit 1;
+          }
+          
+          echo '=== Build Completed Successfully ==='
+          echo 'Generated APK files:'
+          find . -name '*.apk' -type f
+          echo 'Bin directory contents:'
+          ls -la bin/
+        "
     
     - name: Verify APK generation
       run: |
-        echo '=== APK Verification ==='
-        echo "Buildozer output filename: ${{ steps.buildozer.outputs.filename }}"
-        
-        # Check for APK files in multiple locations
-        APK_COUNT=$(find . -name '*.apk' -type f 2>/dev/null | wc -l)
-        echo "Found $APK_COUNT APK file(s) in workspace"
-        
-        if [ $APK_COUNT -gt 0 ]; then
-          echo 'APK Details:'
-          find . -name '*.apk' -type f -exec ls -lh {} \;
-          find . -name '*.apk' -type f -exec file {} \;
-          echo '✅ Buildozer Action APK build successful!'
-        elif [ -n "${{ steps.buildozer.outputs.filename }}" ] && [ -f "${{ steps.buildozer.outputs.filename }}" ]; then
-          echo '✅ APK found at buildozer output location!'
-          ls -lh "${{ steps.buildozer.outputs.filename }}"
-          file "${{ steps.buildozer.outputs.filename }}"
-        else
-          echo '❌ No APK files generated'
-          echo 'Build workspace contents:'
-          find build-workspace -type f -name '*.log' -exec echo '=== {} ===' \; -exec tail -50 {} \; 2>/dev/null || echo 'No log files'
-          echo 'Checking bin directory:'
-          ls -la build-workspace/bin/ 2>/dev/null || echo 'No bin directory found'
-          exit 1
-        fi
+        WORKSPACE_DIR=$(pwd)
+        su - builduser -c "
+          cd '$WORKSPACE_DIR/build-workspace'
+          source ~/.bashrc
+          export PATH=\$HOME/venv/bin:\$PATH
+          
+          echo '=== APK Verification ==='
+          APK_COUNT=\$(find . -name '*.apk' -type f | wc -l)
+          echo \"Found \$APK_COUNT APK file(s)\"
+          
+          if [ \$APK_COUNT -gt 0 ]; then
+            echo 'APK Details:'
+            find . -name '*.apk' -type f -exec ls -lh {} \\;
+            find . -name '*.apk' -type f -exec file {} \\;
+            echo '✅ Arch Linux APK build successful!'
+          else
+            echo '❌ No APK files generated'
+            echo 'Build directory contents:'
+            find . -type f -name '*.log' -exec echo '=== {} ===' \\; -exec tail -100 {} \\; || echo 'No log files'
+            exit 1
+          fi
+        "
     
     - name: Upload APK artifact
       uses: actions/upload-artifact@v4
       with:
-        name: buildozer-kivy-apk-${{ github.run_number }}
-        path: |
-          ${{ steps.buildozer.outputs.filename }}
-          build-workspace/bin/*.apk
+        name: arch-linux-build-apk-${{ github.run_number }}
+        path: build-workspace/bin/*.apk
         retention-days: 30
-        if-no-files-found: warn
+        if-no-files-found: error
     
     - name: Upload build logs
       if: always()
       uses: actions/upload-artifact@v4
       with:
-        name: buildozer-logs-${{ github.run_number }}
+        name: arch-build-logs-${{ github.run_number }}
         path: |
           build-workspace/.buildozer/
           build-workspace/*.log
@@ -190,25 +352,26 @@ EOF
     - name: Final build summary
       if: always()
       run: |
-        echo "## 🚀 Buildozer Action Build Summary" >> $GITHUB_STEP_SUMMARY
+        WORKSPACE_DIR=$(pwd)
+        echo "## 🏛️ Arch Linux Build Summary" >> $GITHUB_STEP_SUMMARY
         echo "" >> $GITHUB_STEP_SUMMARY
-        echo "- **Build Method:** ArtemSBulgakov/buildozer-action@v1" >> $GITHUB_STEP_SUMMARY
-        echo "- **Buildozer Version:** stable (latest PyPI release)" >> $GITHUB_STEP_SUMMARY
-        echo "- **Android Architecture:** arm64-v8a" >> $GITHUB_STEP_SUMMARY
+        echo "- **Build Method:** Arch Linux Container (latest)" >> $GITHUB_STEP_SUMMARY
+        echo "- **Python Version:** $(python --version | cut -d' ' -f2)" >> $GITHUB_STEP_SUMMARY
+        echo "- **Java Version:** OpenJDK 17 (Arch repos)" >> $GITHUB_STEP_SUMMARY
+        echo "- **Buildozer Version:** 1.5.0" >> $GITHUB_STEP_SUMMARY
         echo "- **Source Branch:** ${{ github.event.inputs.branch || 'cross_plateform' }}" >> $GITHUB_STEP_SUMMARY
-        echo "- **Runner:** ubuntu-latest" >> $GITHUB_STEP_SUMMARY
+        echo "- **Container:** archlinux:latest" >> $GITHUB_STEP_SUMMARY
         echo "" >> $GITHUB_STEP_SUMMARY
         
-        if [ -n "${{ steps.buildozer.outputs.filename }}" ] && [ -f "${{ steps.buildozer.outputs.filename }}" ]; then
-          APK_SIZE=$(ls -lh "${{ steps.buildozer.outputs.filename }}" | awk '{print $5}')
+        if su - builduser -c "find '$WORKSPACE_DIR/build-workspace' -name '*.apk' -type f" | grep -q .; then
+          APK_SIZE=$(su - builduser -c "find '$WORKSPACE_DIR/build-workspace' -name '*.apk' -type f -exec ls -lh {} \;" | awk '{print $5}' | head -1)
           echo "- **Status:** ✅ Build Successful" >> $GITHUB_STEP_SUMMARY
           echo "- **APK Generated:** ✅ Yes (Size: $APK_SIZE)" >> $GITHUB_STEP_SUMMARY
-          echo "- **APK Location:** \`${{ steps.buildozer.outputs.filename }}\`" >> $GITHUB_STEP_SUMMARY
           echo "- **Download:** Available in artifacts section below" >> $GITHUB_STEP_SUMMARY
-          echo "- **Note:** Successfully built with the community-maintained action! 🎉" >> $GITHUB_STEP_SUMMARY
+          echo "- **BTW:** I use Arch 😎" >> $GITHUB_STEP_SUMMARY
         else
           echo "- **Status:** ❌ Build Failed" >> $GITHUB_STEP_SUMMARY
           echo "- **APK Generated:** ❌ No" >> $GITHUB_STEP_SUMMARY
           echo "- **Action Required:** Check build logs in artifacts" >> $GITHUB_STEP_SUMMARY
-          echo "- **Common Issues:** Check buildozer.spec syntax, file permissions, or disk space" >> $GITHUB_STEP_SUMMARY
+          echo "- **Note:** Even Arch can't fix everything 🤷" >> $GITHUB_STEP_SUMMARY
         fi
