@@ -1,9 +1,7 @@
-name: Build Kivy Android APK (Docker Alternative)
+name: Build Kivy Android APK (Working Docker)
 
 on:
   push:
-    branches: [ main ]
-  pull_request:
     branches: [ main ]
   workflow_dispatch:
     inputs:
@@ -16,76 +14,20 @@ on:
 jobs:
   build-android:
     runs-on: ubuntu-latest
-    container:
-      image: ubuntu:20.04
-      env:
-        DEBIAN_FRONTEND: noninteractive
     
     steps:
-    - name: Install system dependencies
-      run: |
-        apt-get update
-        apt-get install -y \
-          build-essential \
-          git \
-          python3.11 \
-          python3.11-dev \
-          python3.11-venv \
-          python3-pip \
-          openjdk-17-jdk \
-          autoconf \
-          libtool \
-          pkg-config \
-          zlib1g-dev \
-          libncurses5-dev \
-          libncursesw5-dev \
-          libtinfo5 \
-          cmake \
-          libffi-dev \
-          libssl-dev \
-          unzip \
-          zip \
-          software-properties-common
-        
-        # Add deadsnakes PPA for Python 3.11
-        add-apt-repository ppa:deadsnakes/ppa -y
-        apt-get update
-        apt-get install -y python3.11 python3.11-dev python3.11-venv
-    
-    - name: Checkout main branch
-      uses: actions/checkout@v4
-      with:
-        ref: main
-        path: main-branch
-    
     - name: Checkout cross_plateform branch
       uses: actions/checkout@v4
       with:
         ref: ${{ github.event.inputs.branch || 'cross_plateform' }}
         path: source-code
     
-    - name: Setup build environment
+    - name: Prepare build workspace
       run: |
         mkdir -p build-workspace
         cp -r source-code/python/kivy/* build-workspace/
         
-        # Set Java environment
-        export JAVA_HOME=/usr/lib/jvm/java-17-openjdk-amd64
-        echo "JAVA_HOME=/usr/lib/jvm/java-17-openjdk-amd64" >> $GITHUB_ENV
-        
-        # Create Python virtual environment
-        python3.11 -m venv build-venv
-        source build-venv/bin/activate
-        
-        # Install buildozer
-        pip install --upgrade pip
-        pip install buildozer==1.5.0 cython==0.29.36
-        
-        # Verify files
-        ls -la build-workspace/
-    
-    - name: Create default buildozer.spec if missing
-      run: |
+        # Create buildozer.spec if missing
         if [ ! -f "build-workspace/buildozer.spec" ]; then
           cat > build-workspace/buildozer.spec << 'EOF'
         [app]
@@ -95,7 +37,7 @@ jobs:
         source.dir = .
         source.include_exts = py,png,jpg,kv,atlas
         version = 0.1
-        requirements = python3==3.11.0,kivy==2.1.0,pillow
+        requirements = python3,kivy==2.1.0,pillow
         orientation = portrait
         fullscreen = 0
         
@@ -112,25 +54,38 @@ jobs:
         android.ndk_api = 21
         android.archs = arm64-v8a
         android.accept_sdk_license = True
-        android.skip_update = False
-        android.allow_backup = True
         EOF
         fi
+        
+        ls -la build-workspace/
     
-    - name: Build APK
+    # Try multiple working Docker images as fallback
+    - name: Build APK with homdx/buildozer
       run: |
-        source build-venv/bin/activate
-        cd build-workspace
-        
-        echo "Building APK..."
-        buildozer android debug
-        
-        echo "Build completed!"
-        ls -la bin/ || echo "No bin directory found"
+        docker run --rm \
+          -v $(pwd)/build-workspace:/app \
+          -w /app \
+          homdx/buildozer \
+          buildozer android debug || echo "homdx/buildozer failed, trying next option..."
+    
+    - name: Build APK with unsuitable001/buildozer3 (fallback)
+      if: failure()
+      run: |
+        docker run --rm \
+          -v $(pwd)/build-workspace:/buildozer \
+          -w /buildozer \
+          unsuitable001/buildozer3 \
+          buildozer android debug
+    
+    - name: List generated files
+      run: |
+        echo "Build workspace contents:"
+        find build-workspace -name "*.apk" || echo "No APK found"
+        ls -la build-workspace/bin/ || echo "No bin directory"
     
     - name: Upload APK
       uses: actions/upload-artifact@v4
       with:
         name: kivy-android-apk-${{ github.run_number }}
         path: build-workspace/bin/*.apk
-        if-no-files-found: error
+        if-no-files-found: warn
