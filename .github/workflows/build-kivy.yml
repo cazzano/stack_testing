@@ -1,4 +1,4 @@
-name: Build Kivy Android APK (Working Docker)
+name: Build with unsuitable001/buildozer3
 
 on:
   push:
@@ -16,7 +16,7 @@ jobs:
     runs-on: ubuntu-latest
     
     steps:
-    - name: Checkout cross_plateform branch
+    - name: Checkout source code
       uses: actions/checkout@v4
       with:
         ref: ${{ github.event.inputs.branch || 'cross_plateform' }}
@@ -37,13 +37,13 @@ jobs:
         source.dir = .
         source.include_exts = py,png,jpg,kv,atlas
         version = 0.1
-        requirements = python3,kivy==2.1.0,pillow
+        requirements = python3,kivy==2.1.0
         orientation = portrait
         fullscreen = 0
         
         [buildozer]
         log_level = 2
-        warn_on_root = 1
+        warn_on_root = 0
         
         [android]
         android.permissions = INTERNET
@@ -54,38 +54,117 @@ jobs:
         android.ndk_api = 21
         android.archs = arm64-v8a
         android.accept_sdk_license = True
+        android.skip_update = False
         EOF
         fi
         
+        echo "Build workspace contents:"
         ls -la build-workspace/
+        
+        # Set proper permissions for Docker volume mount
+        chmod -R 777 build-workspace/
     
-    # Try multiple working Docker images as fallback
-    - name: Build APK with homdx/buildozer
+    - name: Pull unsuitable001/buildozer3 image
       run: |
+        echo "Pulling unsuitable001/buildozer3 Docker image..."
+        docker pull unsuitable001/buildozer3:latest
+        
+        echo "Image info:"
+        docker inspect unsuitable001/buildozer3:latest --format='{{.Config.WorkingDir}}'
+        docker inspect unsuitable001/buildozer3:latest --format='{{.Config.User}}'
+    
+    - name: Test Docker container setup
+      run: |
+        echo "Testing container environment..."
         docker run --rm \
-          -v $(pwd)/build-workspace:/app \
-          -w /app \
-          homdx/buildozer \
-          buildozer android debug || echo "homdx/buildozer failed, trying next option..."
+          -v $(pwd)/build-workspace:/buildozer \
+          unsuitable001/buildozer3:latest \
+          /bin/bash -c "
+            echo 'Container working directory:' && pwd &&
+            echo 'User info:' && whoami &&
+            echo 'Python version:' && python3 --version &&
+            echo 'Buildozer version:' && buildozer version &&
+            echo 'Contents of mounted directory:' && ls -la /buildozer/ &&
+            echo 'Permissions check:' && ls -la /buildozer/
+          "
     
-    - name: Build APK with unsuitable001/buildozer3 (fallback)
-      if: failure()
+    - name: Build APK with unsuitable001/buildozer3
       run: |
+        echo "Starting APK build with unsuitable001/buildozer3..."
+        
         docker run --rm \
           -v $(pwd)/build-workspace:/buildozer \
           -w /buildozer \
-          unsuitable001/buildozer3 \
-          buildozer android debug
+          -e BUILDOZER_WARN_ON_ROOT=0 \
+          unsuitable001/buildozer3:latest \
+          /bin/bash -c "
+            echo '=== Starting build process ===' &&
+            echo 'Working directory:' && pwd &&
+            echo 'Directory contents:' && ls -la &&
+            echo 'Buildozer spec check:' && cat buildozer.spec | head -20 &&
+            echo '=== Running buildozer android debug ===' &&
+            buildozer android debug &&
+            echo '=== Build completed ===' &&
+            echo 'Checking for generated APK:' &&
+            find . -name '*.apk' -type f || echo 'No APK files found' &&
+            ls -la bin/ || echo 'No bin directory found'
+          "
     
-    - name: List generated files
+    - name: Check build results
       run: |
+        echo "=== Post-build analysis ==="
         echo "Build workspace contents:"
-        find build-workspace -name "*.apk" || echo "No APK found"
-        ls -la build-workspace/bin/ || echo "No bin directory"
+        find build-workspace -type f -name "*.apk" || echo "No APK files found"
+        
+        if [ -d "build-workspace/bin" ]; then
+          echo "Contents of bin directory:"
+          ls -la build-workspace/bin/
+        else
+          echo "No bin directory found"
+        fi
+        
+        echo "All files in build workspace:"
+        ls -la build-workspace/
     
-    - name: Upload APK
+    - name: Copy APK files for upload
+      run: |
+        mkdir -p artifacts
+        
+        # Search for APK files and copy them
+        if find build-workspace -name "*.apk" -type f | head -1 | read; then
+          find build-workspace -name "*.apk" -type f -exec cp {} artifacts/ \;
+          echo "APK files copied to artifacts:"
+          ls -la artifacts/
+        else
+          echo "No APK files found to copy"
+          echo "Build may have failed. Creating error report..."
+          echo "BUILD FAILED: No APK generated" > artifacts/build-error.txt
+          echo "Check the build logs above for details" >> artifacts/build-error.txt
+        fi
+    
+    - name: Upload build artifacts
       uses: actions/upload-artifact@v4
       with:
-        name: kivy-android-apk-${{ github.run_number }}
-        path: build-workspace/bin/*.apk
+        name: buildozer3-apk-${{ github.run_number }}
+        path: artifacts/
+        retention-days: 30
         if-no-files-found: warn
+    
+    - name: Build summary
+      if: always()
+      run: |
+        echo "## Build Summary with unsuitable001/buildozer3" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "- **Docker Image:** unsuitable001/buildozer3:latest" >> $GITHUB_STEP_SUMMARY
+        echo "- **Source Branch:** ${{ github.event.inputs.branch || 'cross_plateform' }}" >> $GITHUB_STEP_SUMMARY
+        echo "- **Source Path:** /python/kivy/" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        
+        if find artifacts -name "*.apk" -type f | head -1 | read; then
+          echo "- **Build Status:** ✅ Success" >> $GITHUB_STEP_SUMMARY
+          echo "- **APK Generated:** ✅ Available for download" >> $GITHUB_STEP_SUMMARY
+        else
+          echo "- **Build Status:** ❌ Failed" >> $GITHUB_STEP_SUMMARY
+          echo "- **APK Generated:** ❌ No APK files found" >> $GITHUB_STEP_SUMMARY
+          echo "- **Troubleshooting:** Check build logs above for error details" >> $GITHUB_STEP_SUMMARY
+        fi
