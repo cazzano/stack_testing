@@ -3,8 +3,6 @@ name: Build APK - Buildozer Action
 on:
   push:
     branches: [ main ]
-  pull_request:
-    branches: [ main ]
   workflow_dispatch:
     inputs:
       branch:
@@ -22,39 +20,22 @@ jobs:
     - name: Checkout source code
       uses: actions/checkout@v4
       with:
-        ref: ${{ github.event.inputs.branch || github.ref }}
+        ref: ${{ github.event.inputs.branch || 'cross_plateform' }}
+        path: source-code
     
     - name: Prepare build workspace
       run: |
-        echo "=== Preparing build workspace ==="
+        mkdir -p build-workspace
+        cp -r source-code/python/kivy/* build-workspace/ 2>/dev/null || echo 'No kivy directory found, using root'
         
-        # Check current directory structure
-        echo "Current directory contents:"
-        ls -la
-        
-        # Check if we have a kivy subdirectory structure
-        if [ -d "python/kivy" ]; then
-          echo "Found python/kivy structure, copying files..."
-          cp -r python/kivy/* . || echo "Copy failed, continuing..."
-        else
-          echo "No python/kivy structure found, using current directory"
-        fi
-        
-        # List current contents after potential copy
-        echo "Directory contents after preparation:"
-        ls -la
-        
-        # Create buildozer.spec if it doesn't exist
-        if [ ! -f "buildozer.spec" ]; then
-          echo "Creating buildozer.spec..."
-          cat > buildozer.spec << 'EOF'
+        # Create optimized buildozer.spec
+        cat > build-workspace/buildozer.spec << 'EOF'
 [app]
 title = My Kivy App
 package.name = kivyapp
-package.domain = org.example
+package.domain = org.kivy
 source.dir = .
 source.include_exts = py,png,jpg,kv,atlas,txt,md
-source.exclude_dirs = tests,bin,.buildozer
 version = 0.1
 requirements = python3,kivy==2.1.0,certifi
 orientation = portrait
@@ -66,42 +47,43 @@ warn_on_root = 0
 
 [android]
 android.permissions = INTERNET,WRITE_EXTERNAL_STORAGE,READ_EXTERNAL_STORAGE
-android.api = 34
+android.api = 33
 android.minapi = 21
 android.ndk = 25b
-android.sdk = 34
+android.sdk = 33
 android.ndk_api = 21
 android.archs = arm64-v8a
 android.accept_sdk_license = True
 android.skip_update = False
+android.gradle_dependencies = 
+android.add_compile_options = 
+
+# Auto-accept all Android SDK licenses
+android.add_packaging_options = pickFirst **/libc++_shared.so, pickFirst **/libjsc.so
 android.gradle_repositories = google(), mavenCentral()
 EOF
-        else
-          echo "buildozer.spec already exists"
-        fi
         
-        # Create main.py if it doesn't exist
-        if [ ! -f "main.py" ]; then
-          echo "Creating main.py..."
-          cat > main.py << 'EOF'
+        # Create a simple main.py if none exists
+        if [ ! -f build-workspace/main.py ]; then
+          cat > build-workspace/main.py << 'EOF'
 from kivy.app import App
 from kivy.uix.label import Label
 from kivy.uix.boxlayout import BoxLayout
 import platform
 
-class MyKivyApp(App):
+class KivyApp(App):
     def build(self):
         layout = BoxLayout(orientation='vertical', padding=20, spacing=20)
         
         title = Label(
-            text='Hello from Kivy!',
+            text='Hello from Kivy Buildozer!',
             font_size='24sp',
             size_hint_y=None,
             height='60dp'
         )
         
         info = Label(
-            text=f'Built with Buildozer Action\nPython: {platform.python_version()}\nPlatform: {platform.system()}',
+            text=f'Built with: Kivy Buildozer Action\\nPython: {platform.python_version()}\\nArchitecture: {platform.machine()}',
             font_size='16sp',
             halign='center'
         )
@@ -112,101 +94,82 @@ class MyKivyApp(App):
         return layout
 
 if __name__ == '__main__':
-    MyKivyApp().run()
+    KivyApp().run()
 EOF
-        else
-          echo "main.py already exists"
         fi
         
-        echo "=== Final workspace contents ==="
-        ls -la
-        echo "=== buildozer.spec content ==="
-        cat buildozer.spec
-
-    - name: Build with Buildozer
+        echo 'Build workspace prepared:'
+        ls -la build-workspace/
+    
+    - name: Build Android APK
       uses: ArtemSBulgakov/buildozer-action@v1
-      id: buildozer
       with:
         command: buildozer android debug
         buildozer_version: ==1.5.0
-        
+        workdir: build-workspace
+    
     - name: Verify APK generation
       run: |
+        cd build-workspace
+        
         echo '=== APK Verification ==='
-        
-        # Check for APK files
-        echo "Looking for APK files..."
-        find . -name '*.apk' -type f || echo "No APK files found"
-        
-        # Check bin directory
-        echo "Contents of bin directory:"
-        ls -la bin/ 2>/dev/null || echo "No bin directory found"
-        
-        # Check .buildozer directory structure
-        echo ".buildozer directory structure:"
-        find .buildozer -name '*.apk' -type f 2>/dev/null || echo "No APK in .buildozer"
-        
         APK_COUNT=$(find . -name '*.apk' -type f | wc -l)
-        echo "Total APK files found: $APK_COUNT"
+        echo "Found $APK_COUNT APK file(s)"
         
         if [ $APK_COUNT -gt 0 ]; then
-          echo '✅ APK build successful!'
           echo 'APK Details:'
           find . -name '*.apk' -type f -exec ls -lh {} \;
           find . -name '*.apk' -type f -exec file {} \;
+          echo '✅ Buildozer Action APK build successful!'
         else
           echo '❌ No APK files generated'
-          echo 'Checking for build errors...'
-          
-          # Show recent log files
-          echo "=== Recent log files ==="
-          find .buildozer -name '*.log' -type f -exec echo "=== {} ===" \; -exec tail -30 {} \; 2>/dev/null || echo "No log files found"
-          
-          # This will cause the workflow to fail
+          echo 'Build directory contents:'
+          find . -type f -name '*.log' -exec echo '=== {} ===' \; -exec tail -100 {} \; || echo 'No log files'
+          ls -la bin/ 2>/dev/null || echo 'No bin directory'
           exit 1
         fi
-
+    
     - name: Upload APK artifact
-      if: success()
       uses: actions/upload-artifact@v4
       with:
-        name: buildozer-apk-${{ github.run_number }}
-        path: |
-          bin/*.apk
-          .buildozer/android/platform/build-*/build/outputs/apk/debug/*.apk
+        name: buildozer-action-apk-${{ github.run_number }}
+        path: build-workspace/bin/*.apk
         retention-days: 30
-        if-no-files-found: warn
+        if-no-files-found: error
     
     - name: Upload build logs
       if: always()
       uses: actions/upload-artifact@v4
       with:
-        name: buildozer-logs-${{ github.run_number }}
+        name: buildozer-action-logs-${{ github.run_number }}
         path: |
-          .buildozer/
-          *.log
+          build-workspace/.buildozer/
+          build-workspace/*.log
         retention-days: 7
         if-no-files-found: ignore
     
-    - name: Build summary
+    - name: Final build summary
       if: always()
       run: |
         echo "## 🚀 Buildozer Action Build Summary" >> $GITHUB_STEP_SUMMARY
         echo "" >> $GITHUB_STEP_SUMMARY
         echo "- **Build Method:** ArtemSBulgakov/buildozer-action@v1" >> $GITHUB_STEP_SUMMARY
         echo "- **Buildozer Version:** 1.5.0" >> $GITHUB_STEP_SUMMARY
-        echo "- **Source Branch:** ${{ github.event.inputs.branch || github.ref_name }}" >> $GITHUB_STEP_SUMMARY
-        echo "- **Run Number:** ${{ github.run_number }}" >> $GITHUB_STEP_SUMMARY
+        echo "- **Source Branch:** ${{ github.event.inputs.branch || 'cross_plateform' }}" >> $GITHUB_STEP_SUMMARY
+        echo "- **Container:** Official Kivy Buildozer Docker Image" >> $GITHUB_STEP_SUMMARY
         echo "" >> $GITHUB_STEP_SUMMARY
         
-        if find . -name '*.apk' -type f | grep -q .; then
-          APK_SIZE=$(find . -name '*.apk' -type f -exec ls -lh {} \; | awk '{print $5}' | head -1)
-          APK_NAME=$(find . -name '*.apk' -type f | head -1 | xargs basename)
+        WORKSPACE_DIR=$(pwd)
+        if find build-workspace -name '*.apk' -type f | grep -q .; then
+          APK_SIZE=$(find build-workspace -name '*.apk' -type f -exec ls -lh {} \; | awk '{print $5}' | head -1)
+          APK_NAME=$(find build-workspace -name '*.apk' -type f | head -1 | xargs basename)
           echo "- **Status:** ✅ Build Successful" >> $GITHUB_STEP_SUMMARY
-          echo "- **APK Generated:** $APK_NAME (Size: $APK_SIZE)" >> $GITHUB_STEP_SUMMARY
-          echo "- **Download:** Check artifacts section below" >> $GITHUB_STEP_SUMMARY
+          echo "- **APK Generated:** ✅ $APK_NAME (Size: $APK_SIZE)" >> $GITHUB_STEP_SUMMARY
+          echo "- **Download:** Available in artifacts section below" >> $GITHUB_STEP_SUMMARY
+          echo "- **Powered by:** Buildozer Action 🎯" >> $GITHUB_STEP_SUMMARY
         else
           echo "- **Status:** ❌ Build Failed" >> $GITHUB_STEP_SUMMARY
-          echo "- **APK Generated:** None" >> $GITHUB_STEP_SUMMARY
-          echo "- **Action Required:** Check logs in artifacts" >> $GITHUB_STEP_SUMMARY
+          echo "- **APK Generated:** ❌ No" >> $GITHUB_STEP_SUMMARY
+          echo "- **Action Required:** Check build logs in artifacts" >> $GITHUB_STEP_SUMMARY
+          echo "- **Note:** Back to debugging we go 🔧" >> $GITHUB_STEP_SUMMARY
         fi
