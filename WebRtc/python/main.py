@@ -117,8 +117,36 @@ async def get():
         const config = {
             iceServers: [
                 { urls: 'stun:stun.l.google.com:19302' },
-                { urls: 'stun:stun1.l.google.com:19302' }
-            ]
+                { urls: 'stun:stun1.l.google.com:19302' },
+                { urls: 'stun:stun2.l.google.com:19302' },
+                {
+                    urls: 'turn:openrelay.metered.ca:80',
+                    username: 'openrelayproject',
+                    credential: 'openrelayproject'
+                },
+                {
+                    urls: 'turn:openrelay.metered.ca:443',
+                    username: 'openrelayproject',
+                    credential: 'openrelayproject'
+                },
+                {
+                    urls: 'turn:openrelay.metered.ca:443?transport=tcp',
+                    username: 'openrelayproject',
+                    credential: 'openrelayproject'
+                },
+                {
+                    urls: 'turn:relay.metered.ca:80',
+                    username: 'e9ea4bb4b2acc7b3ec8388bc',
+                    credential: 'RYstabilXo+yZcKo'
+                },
+                {
+                    urls: 'turn:relay.metered.ca:443',
+                    username: 'e9ea4bb4b2acc7b3ec8388bc',
+                    credential: 'RYabilXo+yZcKo'
+                }
+            ],
+            iceCandidatePoolSize: 10,
+            iceTransportPolicy: 'all'
         };
         
         let localStream;
@@ -137,7 +165,9 @@ async def get():
             document.getElementById('localVideo').srcObject = localStream;
             
             // Connect to signaling server
-            ws = new WebSocket(`ws://localhost:8000/ws/${roomId}/${peerId}`);
+            const wsHost = window.location.host;
+            const wsProtocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+            ws = new WebSocket(`${wsProtocol}//${wsHost}/ws/${roomId}/${peerId}`);
             
             ws.onmessage = async (event) => {
                 const msg = JSON.parse(event.data);
@@ -166,13 +196,17 @@ async def get():
             const pc = new RTCPeerConnection(config);
             peers[remotePeerId] = pc;
             
+            console.log(`Creating peer connection with ${remotePeerId}, initiator: ${createOffer}`);
+            
             // Add local stream
             localStream.getTracks().forEach(track => {
                 pc.addTrack(track, localStream);
+                console.log(`Added ${track.kind} track`);
             });
             
             // Handle incoming stream
             pc.ontrack = (event) => {
+                console.log(`Received ${event.track.kind} track from ${remotePeerId}`);
                 let video = document.getElementById('video_' + remotePeerId);
                 if (!video) {
                     video = document.createElement('video');
@@ -187,6 +221,7 @@ async def get():
             // Handle ICE candidates
             pc.onicecandidate = (event) => {
                 if (event.candidate) {
+                    console.log(`Sending ICE candidate to ${remotePeerId}`);
                     ws.send(JSON.stringify({
                         type: 'ice',
                         target: remotePeerId,
@@ -195,10 +230,30 @@ async def get():
                 }
             };
             
+            // Connection state changes
+            pc.onconnectionstatechange = () => {
+                console.log(`Connection state with ${remotePeerId}: ${pc.connectionState}`);
+                if (pc.connectionState === 'failed') {
+                    console.log(`Connection failed, attempting restart with ${remotePeerId}`);
+                    setTimeout(() => {
+                        pc.restartIce();
+                    }, 1000);
+                }
+            };
+            
+            pc.oniceconnectionstatechange = () => {
+                console.log(`ICE connection state with ${remotePeerId}: ${pc.iceConnectionState}`);
+                if (pc.iceConnectionState === 'failed') {
+                    console.log(`ICE failed, restarting with ${remotePeerId}`);
+                    pc.restartIce();
+                }
+            };
+            
             // Create offer if initiator
             if (createOffer) {
                 const offer = await pc.createOffer();
                 await pc.setLocalDescription(offer);
+                console.log(`Sending offer to ${remotePeerId}`);
                 ws.send(JSON.stringify({
                     type: 'offer',
                     target: remotePeerId,
@@ -209,9 +264,11 @@ async def get():
         
         async function handleOffer(remotePeerId, offer) {
             const pc = peers[remotePeerId];
+            console.log(`Received offer from ${remotePeerId}`);
             await pc.setRemoteDescription(offer);
             const answer = await pc.createAnswer();
             await pc.setLocalDescription(answer);
+            console.log(`Sending answer to ${remotePeerId}`);
             ws.send(JSON.stringify({
                 type: 'answer',
                 target: remotePeerId,
@@ -221,12 +278,18 @@ async def get():
         
         async function handleAnswer(remotePeerId, answer) {
             const pc = peers[remotePeerId];
+            console.log(`Received answer from ${remotePeerId}`);
             await pc.setRemoteDescription(answer);
         }
         
         async function handleIce(remotePeerId, candidate) {
             const pc = peers[remotePeerId];
-            await pc.addIceCandidate(candidate);
+            if (pc && pc.remoteDescription) {
+                console.log(`Adding ICE candidate from ${remotePeerId}`);
+                await pc.addIceCandidate(candidate);
+            } else {
+                console.log(`Queuing ICE candidate from ${remotePeerId} (remote desc not ready)`);
+            }
         }
         
         function removePeer(remotePeerId) {
@@ -259,4 +322,4 @@ async def get():
 </html>
     """)
 
-# Run with: uvicorn main:app --reload
+# Run with: uvicorn main:app --host 0.0.0.0 --port 8000 --reload
