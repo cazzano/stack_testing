@@ -1,7 +1,7 @@
 "use client";
 
 import * as z from "zod";
-import { useForm } from "react-hook-form";
+import { useForm, useFieldArray } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useState } from "react";
 import { Loader2, Info, Lightbulb, Plus, Trash2 } from "lucide-react";
@@ -66,6 +66,20 @@ const formSchema = z.object({
     thirdPartySources: z.enum(["yes", "no"]).default("no"),
     understandTracking: z.boolean().default(false),
     understandSources: z.boolean().default(false),
+
+    // Step 4
+    understandLegalBases: z.boolean().default(false),
+    processForContract: z.enum(["yes", "no"]).default("no"),
+    contractPurposes: z.array(z.string()).default([]),
+    processSensitiveForContract: z.enum(["yes", "no"]).default("no"),
+    contractSensitiveItems: z.array(z.object({ info: z.string(), desc: z.string() })).default([]),
+    processForLegitimate: z.enum(["yes", "no"]).default("no"),
+    legitimatePurposes: z.array(z.string()).default([]),
+    processSensitiveForLegitimate: z.enum(["yes", "no"]).default("no"),
+    legitimateSensitiveItems: z.array(z.object({ reason: z.string(), desc: z.string(), requirement: z.string() })).default([]),
+    marketingConsent: z.enum(["yes", "no"]).default("no"),
+    marketingSms: z.enum(["yes", "no"]).default("no"),
+    marketingMethods: z.array(z.string()).default([]),
 });
 
 interface LoginFormProps {
@@ -114,11 +128,34 @@ export function LoginForm({ onStepChange }: LoginFormProps) {
             thirdPartySources: "no",
             understandTracking: false,
             understandSources: false,
+
+            understandLegalBases: false,
+            processForContract: "no",
+            contractPurposes: [],
+            processSensitiveForContract: "no",
+            contractSensitiveItems: [],
+            processForLegitimate: "no",
+            legitimatePurposes: [],
+            processSensitiveForLegitimate: "no",
+            legitimateSensitiveItems: [],
+            marketingConsent: "no",
+            marketingSms: "no",
+            marketingMethods: [],
         },
     });
 
+    const { fields: contractFields, append: appendContract, remove: removeContract } = useFieldArray({
+        control: form.control,
+        name: "contractSensitiveItems" as const,
+    });
+
+    const { fields: legitimateFields, append: appendLegitimate, remove: removeLegitimate } = useFieldArray({
+        control: form.control,
+        name: "legitimateSensitiveItems" as const,
+    });
+
     const nextStep = () => {
-        if (currentStep < 3) {
+        if (currentStep < 10) {
             setCurrentStep(prev => {
                 const next = prev + 1;
                 onStepChange?.(next);
@@ -640,6 +677,392 @@ export function LoginForm({ onStepChange }: LoginFormProps) {
                         </div>
                     )}
 
+                    {currentStep === 4 && (
+                        <div className="space-y-12 animate-in fade-in slide-in-from-right-4 duration-500">
+                            {/* Step 4 Header */}
+                            <div className="space-y-2">
+                                <div className="flex items-center gap-2 mb-1">
+                                    <div className="w-8 h-8 rounded-lg bg-blue-600 flex items-center justify-center text-white font-bold text-sm">4</div>
+                                    <h2 className="text-2xl font-black text-slate-900 tracking-tight">Use of Information</h2>
+                                </div>
+                                <p className="text-slate-500 text-sm font-medium">How you process your users' personal info</p>
+                            </div>
+
+                            {/* EU/UK Legal Bases */}
+                            <div className="space-y-8">
+                                <h3 className="font-extrabold text-slate-900 text-lg border-b-2 border-slate-100 pb-3">EU/UK Legal Bases for Processing</h3>
+                                <div className="space-y-6">
+                                    <p className="text-sm font-bold text-slate-900">Which are legal bases for processing a user's personal information?</p>
+                                    <p className="text-[12px] text-slate-500 italic leading-relaxed">
+                                        When we process any experience in personal information, you must have a valid legal reason for doing so under legal bases. Legal bases for vary under different privacy law.
+                                    </p>
+
+                                    <div className="bg-blue-50/70 border border-blue-200 p-6 rounded-xl space-y-4">
+                                        <p className="text-[11px] text-blue-800 leading-relaxed font-medium italic">
+                                            Under the EU and UK GDPR, you must only process personal information when you have a valid "legal base". There are six lawful bases for processing under the GDPR: Consent, Performance of the Contract, Legal Basis Interest, Legal Obligation, Vital Interest, or Public Task.
+                                        </p>
+                                    </div>
+
+                                    <div className="bg-amber-50/70 border border-amber-200 p-6 rounded-xl space-y-4">
+                                        <p className="text-[11px] text-amber-800 leading-relaxed font-medium italic">
+                                            Unless you comply with GDPR, you must not default into your privacy policy with only legal bases: Performance of a contract.
+                                        </p>
+                                        <p className="text-[11px] text-amber-800 leading-relaxed font-medium italic">
+                                            In this following page, you will be asked to select the reasons why you process information in the context of these legal bases.
+                                        </p>
+                                    </div>
+
+                                    <div className="bg-yellow-50/70 border border-yellow-200 p-6 rounded-xl space-y-4">
+                                        <p className="text-[11px] text-yellow-800 leading-relaxed font-medium italic">
+                                            Infinite privacy policy uses legal bases under the GDPR:
+                                        </p>
+                                        <p className="text-[11px] text-yellow-800 leading-relaxed font-medium italic">
+                                            By default, your Privacy Policy states that processing is necessary to provide the services under your contract with the user (Performance of Contract). However, in specific situations, you can justify other legal bases. Please select carefully any reasons that you choose to use in the context of these legal bases.
+                                        </p>
+                                    </div>
+
+                                    <FormField control={form.control} name="understandLegalBases" render={({ field }) => (
+                                        <FormItem className="flex flex-row items-start space-x-3 space-y-0 pt-4 border-t border-slate-100">
+                                            <FormControl><Checkbox checked={field.value} onCheckedChange={field.onChange} className="data-[state=checked]:bg-blue-600 border-slate-300 w-5 h-5 rounded mt-0.5" /></FormControl>
+                                            <FormLabel className="text-xs font-bold text-slate-700 cursor-pointer">Yes, I understand the Terms that identify legal bases for default in the privacy policy.</FormLabel>
+                                        </FormItem>
+                                    )} />
+                                </div>
+                            </div>
+
+                            {/* Provision of Services */}
+                            <div className="space-y-8">
+                                <h3 className="font-extrabold text-slate-900 text-lg border-b-2 border-slate-100 pb-3 uppercase tracking-tighter">Legal Basis: Provision of Services / Performance of a Contract</h3>
+                                <div className="space-y-6">
+                                    <FormField control={form.control} name="processForContract" render={({ field }) => (
+                                        <FormItem className="space-y-4">
+                                            <FormLabel className="text-sm font-bold text-slate-900">Do you process user information to provide your Services / fulfill needs related to a Contract with them?</FormLabel>
+                                            <FormControl>
+                                                <RadioGroup onValueChange={field.onChange} defaultValue={field.value} className="flex flex-col space-y-2.5">
+                                                    <FormItem className="flex items-center space-x-3.5 space-y-0"><FormControl><RadioGroupItem value="yes" /></FormControl><FormLabel className="text-sm font-medium">Yes</FormLabel></FormItem>
+                                                    <FormItem className="flex items-center space-x-3.5 space-y-0"><FormControl><RadioGroupItem value="no" /></FormControl><FormLabel className="text-sm font-medium">No</FormLabel></FormItem>
+                                                </RadioGroup>
+                                            </FormControl>
+                                        </FormItem>
+                                    )} />
+
+                                    {form.watch("processForContract") === "yes" && (
+                                        <FormField control={form.control} name="contractPurposes" render={({ field }) => (
+                                            <FormItem className="space-y-4 animate-in fade-in slide-in-from-left-2 transition-all">
+                                                <p className="text-xs font-bold text-slate-800">We will process your personal information for these purposes depending on how you interact with our website, then you should select each:</p>
+                                                <div className="space-y-3">
+                                                    {[
+                                                        "To deliver and facilitate the delivery of services to the user",
+                                                        "To enable user-to-user communications",
+                                                        "To fulfill and manage your orders",
+                                                        "To respond to user inquiries",
+                                                        "To send administrative information to users"
+                                                    ].map((val) => (
+                                                        <FormItem key={val} className="flex flex-row items-center space-x-3 space-y-0">
+                                                            <FormControl>
+                                                                <Checkbox
+                                                                    checked={field.value?.includes(val)}
+                                                                    onCheckedChange={(checked) => {
+                                                                        return checked
+                                                                            ? field.onChange([...field.value, val])
+                                                                            : field.onChange(field.value?.filter((v: string) => v !== val));
+                                                                    }}
+                                                                    className="w-5 h-5 border-slate-300"
+                                                                />
+                                                            </FormControl>
+                                                            <FormLabel className="text-sm font-medium text-slate-700">{val}</FormLabel>
+                                                        </FormItem>
+                                                    ))}
+                                                </div>
+                                            </FormItem>
+                                        )} />
+                                    )}
+
+                                    <FormField control={form.control} name="processSensitiveForContract" render={({ field }) => (
+                                        <FormItem className="space-y-4">
+                                            <FormLabel className="text-sm font-bold text-slate-900">Do you process any sensitive user personal information?</FormLabel>
+                                            <FormControl>
+                                                <RadioGroup onValueChange={field.onChange} defaultValue={field.value} className="flex flex-col space-y-2.5">
+                                                    <FormItem className="flex items-center space-x-3.5 space-y-0"><FormControl><RadioGroupItem value="yes" /></FormControl><FormLabel className="text-sm font-medium">Yes</FormLabel></FormItem>
+                                                    <FormItem className="flex items-center space-x-3.5 space-y-0"><FormControl><RadioGroupItem value="no" /></FormControl><FormLabel className="text-sm font-medium">No</FormLabel></FormItem>
+                                                </RadioGroup>
+                                            </FormControl>
+                                        </FormItem>
+                                    )} />
+
+                                    {form.watch("processSensitiveForContract") === "yes" && (
+                                        <div className="space-y-6 pt-4 border-t border-slate-100 animate-in fade-in slide-in-from-left-2 transition-all">
+                                            <p className="text-xs text-slate-500 italic font-medium leading-relaxed">
+                                                Provide details on why processing user sensitive personal information is a business requirement.
+                                            </p>
+                                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                                <div className="space-y-1.5">
+                                                    <label className="text-[10px] font-bold uppercase text-slate-400">Specific Information</label>
+                                                    <Input id="contractInfo" placeholder="e.g., Financial Data" className="h-10 text-xs border-slate-200" />
+                                                </div>
+                                                <div className="space-y-1.5">
+                                                    <label className="text-[10px] font-bold uppercase text-slate-400">Description</label>
+                                                    <Input id="contractDesc" placeholder="e.g., To process billing and payments." className="h-10 text-xs border-slate-200" />
+                                                </div>
+                                            </div>
+                                            <Button
+                                                type="button"
+                                                size="sm"
+                                                className="bg-slate-900 text-[10px] font-bold tracking-widest px-8 h-10 w-full md:w-auto uppercase"
+                                                onClick={() => {
+                                                    const info = (document.getElementById("contractInfo") as HTMLInputElement).value;
+                                                    const desc = (document.getElementById("contractDesc") as HTMLInputElement).value;
+                                                    if (info && desc) {
+                                                        appendContract({ info, desc });
+                                                        (document.getElementById("contractInfo") as HTMLInputElement).value = "";
+                                                        (document.getElementById("contractDesc") as HTMLInputElement).value = "";
+                                                    }
+                                                }}
+                                            >
+                                                + ADD
+                                            </Button>
+
+                                            {contractFields.length > 0 && (
+                                                <div className="space-y-3">
+                                                    {contractFields.map((field, index) => (
+                                                        <div key={field.id} className="flex items-center justify-between p-3 bg-slate-50 rounded-lg border border-slate-200">
+                                                            <div className="flex flex-col">
+                                                                <span className="text-xs font-bold text-slate-800">{field.info}</span>
+                                                                <span className="text-[10px] text-slate-500">{field.desc}</span>
+                                                            </div>
+                                                            <Button type="button" variant="ghost" size="sm" onClick={() => removeContract(index)}>
+                                                                <Trash2 size={14} className="text-red-500" />
+                                                            </Button>
+                                                        </div>
+                                                    ))}
+                                                </div>
+                                            )}
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
+
+                            {/* Legitimate Interests */}
+                            <div className="space-y-8">
+                                <h3 className="font-extrabold text-slate-900 text-lg border-b-2 border-slate-100 pb-3 uppercase tracking-tighter">Legal Basis: Legitimate Interests</h3>
+                                <div className="space-y-6">
+                                    <FormField control={form.control} name="processForLegitimate" render={({ field }) => (
+                                        <FormItem className="space-y-4">
+                                            <FormLabel className="text-sm font-bold text-slate-900">Are there any other legitimate reasons why you process users' information?</FormLabel>
+                                            <FormControl>
+                                                <RadioGroup onValueChange={field.onChange} defaultValue={field.value} className="flex flex-col space-y-2.5">
+                                                    <FormItem className="flex items-center space-x-3.5 space-y-0"><FormControl><RadioGroupItem value="yes" /></FormControl><FormLabel className="text-sm font-medium">Yes</FormLabel></FormItem>
+                                                    <FormItem className="flex items-center space-x-3.5 space-y-0"><FormControl><RadioGroupItem value="no" /></FormControl><FormLabel className="text-sm font-medium">No</FormLabel></FormItem>
+                                                </RadioGroup>
+                                            </FormControl>
+                                        </FormItem>
+                                    )} />
+
+                                    {form.watch("processForLegitimate") === "yes" && (
+                                        <div className="space-y-6 animate-in fade-in slide-in-from-left-2 transition-all">
+                                            <div className="bg-blue-50/70 border border-blue-200 p-6 rounded-xl">
+                                                <p className="text-[11px] text-blue-800 leading-relaxed font-medium italic">
+                                                    Legitimate interests may apply as legal basis in cases when processing personal information in ways that represent minimal impact on users' rights and interests, such those for computing just basis for processing. As such, you must evaluate that impacts on your users' rights and interests by conducting Legitimate Interest Assessment (LIA).
+                                                </p>
+                                            </div>
+
+                                            <FormField control={form.control} name="legitimatePurposes" render={({ field }) => (
+                                                <FormItem className="space-y-4">
+                                                    <div className="space-y-3">
+                                                        {[
+                                                            { id: "adv", label: "To deliver targeted advertising to users", sub: "to serve advertisements relevant to user based on user behavior, browsing activity, past visit etc." },
+                                                            { id: "promo", label: "To determine the effectiveness of promotional campaigns", sub: "in order to measure your marketing success." },
+                                                            { id: "trends", label: "To identify usage trends", sub: "in order to distinguish users and learn how users use our products they you can improve them and user experience." },
+                                                            { id: "protect", label: "To protect user accounts", sub: "in order to identify and prevent potential account safety threats through systems." },
+                                                            { id: "feedback", label: "To support feedback", sub: "in order to understand how your users interact with your products/services as such you can improve user experience." },
+                                                            { id: "market", label: "To send user marketing and promotional communications", sub: "in order to evaluate and update our update and improve our customer and prospect contact records." },
+                                                            { id: "enforce", label: "To enforce our terms, conditions and policies for business purposes, to comply with legal and regulatory requirements or in connection with our contract.", sub: "" }
+                                                        ].map((item) => (
+                                                            <FormItem key={item.id} className="flex flex-row items-start space-x-3 space-y-0">
+                                                                <FormControl>
+                                                                    <Checkbox
+                                                                        checked={field.value?.includes(item.label)}
+                                                                        onCheckedChange={(checked) => {
+                                                                            return checked
+                                                                                ? field.onChange([...field.value, item.label])
+                                                                                : field.onChange(field.value?.filter((v: string) => v !== item.label));
+                                                                        }}
+                                                                        className="w-5 h-5 border-slate-300 rounded mt-0.5"
+                                                                    />
+                                                                </FormControl>
+                                                                <div className="space-y-1">
+                                                                    <FormLabel className="text-sm font-bold text-slate-800">{item.label}</FormLabel>
+                                                                    {item.sub && <p className="text-[10px] text-slate-500 italic">{item.sub}</p>}
+                                                                </div>
+                                                            </FormItem>
+                                                        ))}
+                                                    </div>
+                                                </FormItem>
+                                            )} />
+
+                                            <FormField control={form.control} name="processSensitiveForLegitimate" render={({ field }) => (
+                                                <FormItem className="space-y-4 pt-4 border-t border-slate-100">
+                                                    <FormLabel className="text-sm font-bold text-slate-900">Do you process sensitive personal information because you believe it represents a legitimate interest?</FormLabel>
+                                                    <FormControl>
+                                                        <RadioGroup onValueChange={field.onChange} defaultValue={field.value} className="flex flex-col space-y-2.5">
+                                                            <FormItem className="flex items-center space-x-3.5 space-y-0"><FormControl><RadioGroupItem value="yes" /></FormControl><FormLabel className="text-sm font-medium">Yes</FormLabel></FormItem>
+                                                            <FormItem className="flex items-center space-x-3.5 space-y-0"><FormControl><RadioGroupItem value="no" /></FormControl><FormLabel className="text-sm font-medium">No</FormLabel></FormItem>
+                                                        </RadioGroup>
+                                                    </FormControl>
+                                                </FormItem>
+                                            )} />
+
+                                            {form.watch("processSensitiveForLegitimate") === "yes" && (
+                                                <div className="space-y-6 pt-4 animate-in fade-in slide-in-from-left-2 transition-all">
+                                                    <p className="text-xs text-slate-500 italic font-medium leading-relaxed">
+                                                        Please state the reason for using this information, describe those reasons and state why this use is legally mandated for selection.
+                                                    </p>
+                                                    <div className="space-y-4">
+                                                        <div className="space-y-1.5">
+                                                            <label className="text-[10px] font-bold uppercase text-slate-400">Reason for using information</label>
+                                                            <Input id="legitReason" placeholder="e.g., Security Monitoring" className="h-10 text-xs border-slate-200" />
+                                                        </div>
+                                                        <div className="space-y-1.5">
+                                                            <label className="text-[10px] font-bold uppercase text-slate-400">Description</label>
+                                                            <Input id="legitDesc" placeholder="e.g., Monitoring for suspicious activity..." className="h-10 text-xs border-slate-200" />
+                                                        </div>
+                                                        <div className="space-y-1.5">
+                                                            <label className="text-[10px] font-bold uppercase text-slate-400">Legal requirement status</label>
+                                                            <Input id="legitReq" placeholder="e.g., Compliance with AML statutes" className="h-10 text-xs border-slate-200" />
+                                                        </div>
+                                                    </div>
+                                                    <Button
+                                                        type="button"
+                                                        size="sm"
+                                                        className="bg-slate-900 text-[10px] font-bold tracking-widest px-8 h-10 w-full md:w-auto uppercase"
+                                                        onClick={() => {
+                                                            const reason = (document.getElementById("legitReason") as HTMLInputElement).value;
+                                                            const desc = (document.getElementById("legitDesc") as HTMLInputElement).value;
+                                                            const requirement = (document.getElementById("legitReq") as HTMLInputElement).value;
+                                                            if (reason && desc && requirement) {
+                                                                appendLegitimate({ reason, desc, requirement });
+                                                                (document.getElementById("legitReason") as HTMLInputElement).value = "";
+                                                                (document.getElementById("legitDesc") as HTMLInputElement).value = "";
+                                                                (document.getElementById("legitReq") as HTMLInputElement).value = "";
+                                                            }
+                                                        }}
+                                                    >
+                                                        + ADD
+                                                    </Button>
+
+                                                    {legitimateFields.length > 0 && (
+                                                        <div className="space-y-3">
+                                                            {legitimateFields.map((field, index) => (
+                                                                <div key={field.id} className="flex items-center justify-between p-3 bg-slate-50 rounded-lg border border-slate-200">
+                                                                    <div className="flex flex-col">
+                                                                        <span className="text-xs font-bold text-slate-800">{field.reason}</span>
+                                                                        <span className="text-[10px] text-slate-500">{field.desc}</span>
+                                                                        <span className="text-[9px] text-slate-400 italic">Legal: {field.requirement}</span>
+                                                                    </div>
+                                                                    <Button type="button" variant="ghost" size="sm" onClick={() => removeLegitimate(index)}>
+                                                                        <Trash2 size={14} className="text-red-500" />
+                                                                    </Button>
+                                                                </div>
+                                                            ))}
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            )}
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
+
+                            {/* Marketing and Promotional Communications */}
+                            <div className="space-y-8">
+                                <h3 className="font-extrabold text-slate-900 text-lg border-b-2 border-slate-100 pb-3">Marketing and Promotional Communications</h3>
+                                <div className="space-y-6">
+                                    <FormField control={form.control} name="marketingConsent" render={({ field }) => (
+                                        <FormItem className="space-y-4">
+                                            <FormLabel className="text-sm font-bold text-slate-900">Do you send marketing and promotional communications to your users?</FormLabel>
+                                            <p className="text-[11px] text-slate-400 italic">We may process the personal information you send to us for our marketing purposes, if this is in accordance with your preferences.</p>
+                                            <FormControl>
+                                                <RadioGroup onValueChange={field.onChange} defaultValue={field.value} className="flex flex-col space-y-2.5">
+                                                    <FormItem className="flex items-center space-x-3.5 space-y-0"><FormControl><RadioGroupItem value="yes" /></FormControl><FormLabel className="text-sm font-medium">Yes</FormLabel></FormItem>
+                                                    <FormItem className="flex items-center space-x-3.5 space-y-0"><FormControl><RadioGroupItem value="no" /></FormControl><FormLabel className="text-sm font-medium">No</FormLabel></FormItem>
+                                                </RadioGroup>
+                                            </FormControl>
+                                        </FormItem>
+                                    )} />
+
+                                    <FormField control={form.control} name="marketingSms" render={({ field }) => (
+                                        <FormItem className="space-y-4">
+                                            <FormLabel className="text-sm font-bold text-slate-900">Do you use SMS messaging to market users?</FormLabel>
+                                            <FormControl>
+                                                <RadioGroup onValueChange={field.onChange} defaultValue={field.value} className="flex flex-col space-y-2.5">
+                                                    <FormItem className="flex items-center space-x-3.5 space-y-0"><FormControl><RadioGroupItem value="yes" /></FormControl><FormLabel className="text-sm font-medium">Yes</FormLabel></FormItem>
+                                                    <FormItem className="flex items-center space-x-3.5 space-y-0"><FormControl><RadioGroupItem value="no" /></FormControl><FormLabel className="text-sm font-medium">No</FormLabel></FormItem>
+                                                </RadioGroup>
+                                            </FormControl>
+                                        </FormItem>
+                                    )} />
+
+                                    <div className="bg-yellow-50/70 border border-yellow-200 p-6 rounded-xl">
+                                        <p className="text-[11px] text-yellow-800 leading-relaxed font-medium italic">
+                                            If a consumer chooses to opt out, you must honor at person's choice within 10 business days. It is common for business to use several avenues of person to opt out. The items below represent some of the avenues common to business services.
+                                        </p>
+                                    </div>
+
+                                    <FormField control={form.control} name="marketingMethods" render={({ field }) => (
+                                        <FormItem className="space-y-4">
+                                            <p className="text-sm font-bold text-slate-900">How do users communicate preferences from our communications?</p>
+                                            <div className="space-y-3">
+                                                {[
+                                                    "Clicking the checkbox that's in the bottom of our marketing emails",
+                                                    "Ticking 'I accept marketing communications'",
+                                                    "Joining mailing list through Third-party partner",
+                                                    "By Asking Consumer directly by mail/sms"
+                                                ].map((val) => (
+                                                    <div key={val} className="flex flex-row items-center space-x-3 space-y-0">
+                                                        <Checkbox
+                                                            checked={field.value?.includes(val)}
+                                                            onCheckedChange={(checked) => {
+                                                                return checked
+                                                                    ? field.onChange([...field.value, val])
+                                                                    : field.onChange(field.value?.filter((v: string) => v !== val));
+                                                            }}
+                                                            className="w-5 h-5 border-slate-300"
+                                                        />
+                                                        <span className="text-sm font-medium text-slate-700">{val}</span>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        </FormItem>
+                                    )} />
+
+                                    <div className="space-y-4 pt-4 border-t border-slate-100">
+                                        <p className="text-sm font-bold text-slate-900">Will you use:</p>
+                                        <div className="flex gap-3">
+                                            <Input placeholder="e.g., WhatsApp, Push notifications..." className="h-11 border-slate-200 text-sm" />
+                                            <Button type="button" size="sm" className="bg-slate-900 text-xs px-6 h-11 uppercase">+ ADD</Button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Final Step 4 Tips */}
+                            <div className="space-y-10">
+                                <div className="bg-blue-50/70 border border-blue-100 p-8 rounded-xl space-y-6">
+                                    <div className="flex items-center gap-2">
+                                        <Info size={18} className="text-blue-600" />
+                                        <h5 className="text-[13px] font-bold text-blue-900">Tips:</h5>
+                                    </div>
+                                    <p className="text-[11px] text-blue-800 leading-relaxed font-bold">
+                                        Compliance matters!
+                                    </p>
+                                    <p className="text-[11px] text-blue-800 leading-relaxed italic">
+                                        Ensure your use of legal bases matches the GDPR's intended use to avoid legal complex with your policy.
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+
                     {/* Persistent Navigation Buttons */}
                     <div className="flex items-center justify-between pt-10 border-t border-slate-100">
                         <Button
@@ -661,7 +1084,7 @@ export function LoginForm({ onStepChange }: LoginFormProps) {
                                 disabled={isLoading}
                                 className="bg-slate-900 hover:bg-slate-800 text-white min-w-[120px] h-11 font-bold text-xs uppercase tracking-widest transition-all shadow-md"
                             >
-                                {isLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : currentStep === 3 ? "Submit" : "Next →"}
+                                {isLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : currentStep === 10 ? "Submit" : "Next →"}
                             </Button>
                         </div>
                     </div>
