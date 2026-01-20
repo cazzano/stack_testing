@@ -1,4 +1,5 @@
 import { parseSellOnThirdParties, parseAIServices, parseOnlinePayments } from './disclosure_of_info';
+import { parseUsage, parseEnglishPreference, parseDescription } from './policy_uses';
 import * as readline from 'readline';
 
 // Create readline interface for user input
@@ -16,65 +17,17 @@ function question(prompt: string): Promise<string> {
   });
 }
 
-// Display menu and format guides
-async function showMenu() {
-  console.log('\n=== Disclosure of Information Parser ===\n');
-  console.log('Choose what you want to parse:');
-  console.log('1. Third-Party Services (sell_on_third_parties)');
-  console.log('2. AI Services (ai_services)');
-  console.log('3. Online Payments (online_payments)');
-  console.log('4. Exit\n');
-}
-
-// Show format guide for Third-Party Services
-function showThirdPartyFormat() {
-  console.log('\n--- Third-Party Services Format Guide ---');
-  console.log('Format: CategoryName#Provider$Service^Flag1^Flag2#Provider2$Service2_NextCategory#Provider$Service*Other#Provider$Service');
-  console.log('\nDelimiters:');
-  console.log('  _ (underscore) = separates categories');
-  console.log('  # (hash) = separates services within a category');
-  console.log('  $ (dollar) = separates provider from service');
-  console.log('  ^ (caret) = separates flags');
-  console.log('  * (asterisk) = starts "Other" category');
-  console.log('\nFlags:');
-  console.log('  "I add personal data to the above" = marks sharePersonalData as true');
-  console.log('  "I share personal data to the above" = marks shareSensitiveData as true');
-  console.log('\nExample:');
-  console.log('Advertising#Amazon$Ads^I add personal data to the above^I share personal data to the above_AI Platforms#Anthropic$Claude*Other#TestProvider$TestService');
-  console.log('---\n');
-}
-
-// Show format guide for AI Services
-function showAIServicesFormat() {
-  console.log('\n--- AI Services Format Guide ---');
-  console.log('Format: Function1_Function2#Platform1_Platform2*OptOut1_OptOut2');
-  console.log('\nDelimiters:');
-  console.log('  _ (underscore) = separates functions/platforms/opt-out methods');
-  console.log('  # (hash) = separates functions from platforms');
-  console.log('  * (asterisk) = separates before opt-out methods');
-  console.log('\nExample:');
-  console.log('Content Generation_Code Assistance#ChatGPT_Claude_Gemini*Email opt-out_Account settings');
-  console.log('---\n');
-}
-
-// Show format guide for Online Payments
-function showOnlinePaymentsFormat() {
-  console.log('\n--- Online Payments Format Guide ---');
-  console.log('Format: Vendor1#URL1_Vendor2#URL2*AdditionalDetails');
-  console.log('\nDelimiters:');
-  console.log('  # (hash) = separates vendor name from privacy policy URL');
-  console.log('  _ (underscore) = separates vendors');
-  console.log('  * (asterisk) = separates before additional details');
-  console.log('\nExample:');
-  console.log('PayPal#https://paypal.com/privacy_Stripe#https://stripe.com/privacy*We use secure payment processing');
-  console.log('---\n');
+// Get input from args or prompt
+async function getInput(prompt: string, args: string[], argIndex: number): Promise<string> {
+  if (args.length > argIndex) {
+    return args[argIndex];
+  }
+  return await question(prompt);
 }
 
 // Parse Third-Party Services
-async function parseThirdParty() {
-  showThirdPartyFormat();
-  const input = await question('Enter your third-party services string: ');
-  
+async function parseThirdParty(args: string[]) {
+  const input = await getInput('Enter your third-party services string: ', args, 2);
   console.log('\nParsing...\n');
   const result = parseSellOnThirdParties(input);
   console.log('=== PARSED RESULT ===');
@@ -83,10 +36,8 @@ async function parseThirdParty() {
 }
 
 // Parse AI Services
-async function parseAI() {
-  showAIServicesFormat();
-  const input = await question('Enter your AI services string: ');
-  
+async function parseAI(args: string[]) {
+  const input = await getInput('Enter your AI services string: ', args, 2);
   console.log('\nParsing...\n');
   const result = parseAIServices(input);
   console.log('=== PARSED RESULT ===');
@@ -95,10 +46,8 @@ async function parseAI() {
 }
 
 // Parse Online Payments
-async function parsePayments() {
-  showOnlinePaymentsFormat();
-  const input = await question('Enter your online payments string: ');
-  
+async function parsePayments(args: string[]) {
+  const input = await getInput('Enter your online payments string: ', args, 2);
   console.log('\nParsing...\n');
   const result = parseOnlinePayments(input);
   console.log('=== PARSED RESULT ===');
@@ -106,33 +55,91 @@ async function parsePayments() {
   console.log('\n');
 }
 
-// Main program loop
+// Parse Usage
+async function parseUsageField(args: string[]) {
+  const input = await getInput('Enter your usage string: ', args, 2);
+  console.log('\nParsing...\n');
+  const result = parseUsage(input);
+  console.log('=== PARSED RESULT ===');
+  console.log(JSON.stringify(result, null, 2));
+  console.log('\n');
+}
+
+// Parse English Preference
+async function parseEnglish(args: string[]) {
+  const input = await getInput('Enter your english preference (1 for American, 0 for British): ', args, 2);
+  console.log('\nParsing...\n');
+  const result = parseEnglishPreference(input);
+  console.log('=== PARSED RESULT ===');
+  console.log(JSON.stringify(result, null, 2));
+  console.log('\n');
+}
+
+// Parse Description
+async function parseDescriptionField(args: string[]) {
+  const input = await getInput('Enter your description string: ', args, 2);
+  console.log('\nParsing...\n');
+  const result = parseDescription(input);
+  console.log('=== PARSED RESULT ===');
+  console.log(JSON.stringify(result, null, 2));
+  console.log('\n');
+}
+
+// Main program loop with CLI argument support
 async function main() {
-  let running = true;
-  
-  while (running) {
-    await showMenu();
-    const choice = await question('Enter your choice (1-4): ');
-    
-    switch (choice.trim()) {
-      case '1':
-        await parseThirdParty();
-        break;
-      case '2':
-        await parseAI();
-        break;
-      case '3':
-        await parsePayments();
-        break;
-      case '4':
-        console.log('\nGoodbye! 👋\n');
-        running = false;
-        break;
-      default:
-        console.log('\nInvalid choice. Please enter 1-4.\n');
-    }
+  const args = process.argv.slice(2);
+
+  if (args.length < 1) {
+    console.log('Usage:');
+    console.log('  ts-node main.ts disclosure --third_party [input_string]');
+    console.log('  ts-node main.ts disclosure --ai [input_string]');
+    console.log('  ts-node main.ts disclosure --payments [input_string]');
+    console.log('  ts-node main.ts uses --usage [input_string]');
+    console.log('  ts-node main.ts uses --english [input_string]');
+    console.log('  ts-node main.ts uses --description [input_string]');
+    rl.close();
+    return;
   }
-  
+
+  const [module, option] = args;
+
+  switch (module) {
+    case 'disclosure':
+      switch (option) {
+        case '--third_party':
+          await parseThirdParty(args);
+          break;
+        case '--ai':
+          await parseAI(args);
+          break;
+        case '--payments':
+          await parsePayments(args);
+          break;
+        default:
+          console.log('Invalid disclosure option. Use --third_party, --ai, or --payments');
+      }
+      break;
+
+    case 'uses':
+      switch (option) {
+        case '--usage':
+          await parseUsageField(args);
+          break;
+        case '--english':
+          await parseEnglish(args);
+          break;
+        case '--description':
+          await parseDescriptionField(args);
+          break;
+        default:
+          console.log('Invalid uses option. Use --usage, --english, or --description');
+      }
+      break;
+
+    default:
+      console.log('Invalid module. Use "disclosure" or "uses"');
+  }
+
   rl.close();
 }
 
