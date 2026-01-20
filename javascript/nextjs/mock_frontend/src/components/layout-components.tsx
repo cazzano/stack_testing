@@ -49,34 +49,45 @@ const steps = [
     { id: 8, title: "Final Details", status: "todo", desc: "Review Your Policy Coverage" },
 ];
 
-export function Sidebar() {
+interface SidebarProps {
+    currentStep: number;
+}
+
+export function Sidebar({ currentStep }: SidebarProps) {
+    const progressValue = ((currentStep) / 10) * 100;
+
     return (
         <aside className="w-80 border-r bg-slate-50/50 min-h-[calc(100vh-64px)] p-6 overflow-y-auto hidden lg:block">
             <div className="mb-8">
                 <h2 className="text-sm font-bold text-slate-900 mb-2 uppercase tracking-wider">Progress</h2>
                 <div className="flex items-center gap-3">
-                    <Progress value={12} className="h-2 flex-1" />
-                    <span className="text-xs font-semibold text-slate-500">1 of 8 completed</span>
+                    <Progress value={progressValue} className="h-2 flex-1" />
+                    <span className="text-xs font-semibold text-slate-500">{currentStep} of 10 completed</span>
                 </div>
             </div>
 
             <div className="space-y-3">
-                {steps.map((step) => (
-                    <div
-                        key={step.id}
-                        className={`flex gap-4 p-3 rounded-xl border transition-all cursor-pointer ${step.id === 1 ? "bg-white border-blue-100 shadow-sm" : "bg-transparent border-transparent hover:bg-slate-100/50"
-                            }`}
-                    >
-                        <div className={`w-8 h-8 shrink-0 rounded-full flex items-center justify-center text-xs font-bold border ${step.id === 1 ? "bg-blue-600 border-blue-600 text-white" : "bg-slate-200 border-slate-200 text-slate-500"
-                            }`}>
-                            {step.id}
+                {steps.map((step) => {
+                    const isActive = step.id === currentStep;
+                    const isCompleted = step.id < currentStep;
+
+                    return (
+                        <div
+                            key={step.id}
+                            className={`flex gap-4 p-3 rounded-xl border transition-all cursor-pointer ${isActive ? "bg-white border-blue-100 shadow-sm" : "bg-transparent border-transparent hover:bg-slate-100/50"
+                                }`}
+                        >
+                            <div className={`w-8 h-8 shrink-0 rounded-full flex items-center justify-center text-xs font-bold border transition-colors ${isActive || isCompleted ? "bg-blue-600 border-blue-600 text-white" : "bg-slate-200 border-slate-200 text-slate-500"
+                                }`}>
+                                {step.id}
+                            </div>
+                            <div className="flex flex-col gap-0.5">
+                                <h3 className={`text-xs font-bold ${isActive ? "text-blue-900" : "text-slate-700"}`}>{step.title}</h3>
+                                <p className="text-[10px] text-slate-500 leading-relaxed max-w-[180px]">{step.desc}</p>
+                            </div>
                         </div>
-                        <div className="flex flex-col gap-0.5">
-                            <h3 className={`text-xs font-bold ${step.id === 1 ? "text-blue-900" : "text-slate-700"}`}>{step.title}</h3>
-                            <p className="text-[10px] text-slate-500 leading-relaxed max-w-[180px]">{step.desc}</p>
-                        </div>
-                    </div>
-                ))}
+                    );
+                })}
             </div>
         </aside>
     );
