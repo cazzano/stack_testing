@@ -39,14 +39,16 @@ export function Header() {
 }
 
 const steps = [
-    { id: 1, title: "Privacy Policy Uses", status: "completed", desc: "What will this Privacy Policy be used for?" },
-    { id: 2, title: "User Information", status: "todo", desc: "User Location" },
-    { id: 3, title: "Collection of Information", status: "todo", desc: "Personal Information Collected Directly" },
-    { id: 4, title: "Use of Information", status: "todo", desc: "How do we process your information?" },
-    { id: 5, title: "Disclosure of Information", status: "todo", desc: "When and with whom do we share your personal information?" },
-    { id: 6, title: "Use of Tracking Technologies", status: "todo", desc: "Do we use cookies and other tracking technologies?" },
-    { id: 7, title: "User Rights", status: "todo", desc: "What are your privacy rights?" },
-    { id: 8, title: "Final Details", status: "todo", desc: "Review Your Policy Coverage" },
+    { id: 1, title: "Privacy Policy Uses", desc: "What will this Privacy Policy be used for?" },
+    { id: 2, title: "User Information", desc: "User Location" },
+    { id: 3, title: "Collection of Information", desc: "Personal Information Collected Directly" },
+    { id: 4, title: "Use of Information", desc: "How do we process your information?" },
+    { id: 5, title: "Disclosure of Information", desc: "When and with whom do we share your personal information?" },
+    { id: 6, title: "Use of Tracking Technologies", desc: "Do we use cookies and other tracking technologies?" },
+    { id: 7, title: "US Considerations", desc: "United States specific privacy rights" },
+    { id: 8, title: "Europe Considerations", desc: "EU/UK Legal Bases for Processing" },
+    { id: 9, title: "User Rights", desc: "What are your privacy rights?" },
+    { id: 10, title: "Final Details", desc: "Review Your Policy Coverage" },
 ];
 
 interface SidebarProps {
