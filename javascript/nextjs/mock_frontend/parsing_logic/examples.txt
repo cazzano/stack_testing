@@ -1,0 +1,301 @@
+# Example Inputs for Disclosure of Information Parser
+
+## 1. Third-Party Services (sell_on_third_parties)
+
+### Example 1: Multiple categories with flags
+```
+Advertising, Direct Marketing, & Lead Generation#Amazon$Ads of ecommerce^I add personal data to the above^I share personal data to the above#Google$Google Ads^I add personal data to the above_AI Platforms#Anthropic$Claude Sonnet^I add personal data to the above^I share personal data to the above#OpenAI$ChatGPT^I share personal data to the above_Analytics & Data Management#Google Analytics$Website Analytics^I add personal data to the above*Other#Custom Provider$Custom Service^I add personal data to the above
+```
+
+**Expected Output:**
+```json
+{
+  "categories": [
+    {
+      "categoryName": "Advertising, Direct Marketing, & Lead Generation",
+      "services": [
+        {
+          "provider": "Amazon",
+          "service": "Ads of ecommerce",
+          "sharePersonalData": true,
+          "shareSensitiveData": true
+        },
+        {
+          "provider": "Google",
+          "service": "Google Ads",
+          "sharePersonalData": true,
+          "shareSensitiveData": false
+        }
+      ]
+    },
+    {
+      "categoryName": "AI Platforms",
+      "services": [
+        {
+          "provider": "Anthropic",
+          "service": "Claude Sonnet",
+          "sharePersonalData": true,
+          "shareSensitiveData": true
+        },
+        {
+          "provider": "OpenAI",
+          "service": "ChatGPT",
+          "sharePersonalData": false,
+          "shareSensitiveData": true
+        }
+      ]
+    },
+    {
+      "categoryName": "Analytics & Data Management",
+      "services": [
+        {
+          "provider": "Google Analytics",
+          "service": "Website Analytics",
+          "sharePersonalData": true,
+          "shareSensitiveData": false
+        }
+      ]
+    },
+    {
+      "categoryName": "Other",
+      "services": [
+        {
+          "provider": "Custom Provider",
+          "service": "Custom Service",
+          "sharePersonalData": true,
+          "shareSensitiveData": false
+        }
+      ]
+    }
+  ]
+}
+```
+
+### Example 2: E-commerce and payment services
+```
+E-commerce Platforms#Shopify$Online Store Management^I add personal data to the above#WooCommerce$WordPress Commerce^I add personal data to the above^I share personal data to the above_Payment Processing#Stripe$Payment Gateway^I share personal data to the above#PayPal$Express Checkout_Customer Support#Zendesk$Help Desk Software^I add personal data to the above#Intercom$Live Chat^I add personal data to the above^I share personal data to the above*Other#MailChimp$Email Marketing^I share personal data to the above#SendGrid$Transactional Emails
+```
+
+**Expected Output:**
+```json
+{
+  "categories": [
+    {
+      "categoryName": "E-commerce Platforms",
+      "services": [
+        {
+          "provider": "Shopify",
+          "service": "Online Store Management",
+          "sharePersonalData": true,
+          "shareSensitiveData": false
+        },
+        {
+          "provider": "WooCommerce",
+          "service": "WordPress Commerce",
+          "sharePersonalData": true,
+          "shareSensitiveData": true
+        }
+      ]
+    },
+    {
+      "categoryName": "Payment Processing",
+      "services": [
+        {
+          "provider": "Stripe",
+          "service": "Payment Gateway",
+          "sharePersonalData": false,
+          "shareSensitiveData": true
+        },
+        {
+          "provider": "PayPal",
+          "service": "Express Checkout",
+          "sharePersonalData": false,
+          "shareSensitiveData": false
+        }
+      ]
+    },
+    {
+      "categoryName": "Customer Support",
+      "services": [
+        {
+          "provider": "Zendesk",
+          "service": "Help Desk Software",
+          "sharePersonalData": true,
+          "shareSensitiveData": false
+        },
+        {
+          "provider": "Intercom",
+          "service": "Live Chat",
+          "sharePersonalData": true,
+          "shareSensitiveData": true
+        }
+      ]
+    },
+    {
+      "categoryName": "Other",
+      "services": [
+        {
+          "provider": "MailChimp",
+          "service": "Email Marketing",
+          "sharePersonalData": false,
+          "shareSensitiveData": true
+        },
+        {
+          "provider": "SendGrid",
+          "service": "Transactional Emails",
+          "sharePersonalData": false,
+          "shareSensitiveData": false
+        }
+      ]
+    }
+  ]
+}
+```
+
+---
+
+## 2. AI Services (ai_services)
+
+### Example 1: Content creation and coding AI
+```
+Content Generation_Code Assistance_Image Creation_Data Analysis#ChatGPT_Claude_GitHub Copilot_DALL-E_Midjourney*Email preferences_Account settings page_Contact support_Privacy dashboard
+```
+
+**Expected Output:**
+```json
+{
+  "functions": [
+    "Content Generation",
+    "Code Assistance",
+    "Image Creation",
+    "Data Analysis"
+  ],
+  "platforms": [
+    "ChatGPT",
+    "Claude",
+    "GitHub Copilot",
+    "DALL-E",
+    "Midjourney"
+  ],
+  "optOutMethods": [
+    "Email preferences",
+    "Account settings page",
+    "Contact support",
+    "Privacy dashboard"
+  ]
+}
+```
+
+### Example 2: Business automation AI
+```
+Customer Service Automation_Email Response Generation_Meeting Summarization_Report Writing#Zendesk AI_Jasper AI_Otter.ai_Notion AI_Grammarly Business*Opt-out link in emails_User settings under Privacy tab_Submit request to data protection officer
+```
+
+**Expected Output:**
+```json
+{
+  "functions": [
+    "Customer Service Automation",
+    "Email Response Generation",
+    "Meeting Summarization",
+    "Report Writing"
+  ],
+  "platforms": [
+    "Zendesk AI",
+    "Jasper AI",
+    "Otter.ai",
+    "Notion AI",
+    "Grammarly Business"
+  ],
+  "optOutMethods": [
+    "Opt-out link in emails",
+    "User settings under Privacy tab",
+    "Submit request to data protection officer"
+  ]
+}
+```
+
+---
+
+## 3. Online Payments (online_payments)
+
+### Example 1: Multiple payment providers
+```
+PayPal#https://www.paypal.com/privacy_Stripe#https://stripe.com/privacy_Square#https://squareup.com/privacy_Authorize.Net#https://www.authorize.net/privacy*All payment processing is encrypted using SSL/TLS. We do not store credit card information on our servers.
+```
+
+**Expected Output:**
+```json
+{
+  "vendors": [
+    {
+      "vendorName": "PayPal",
+      "privacyPolicyUrl": "https://www.paypal.com/privacy"
+    },
+    {
+      "vendorName": "Stripe",
+      "privacyPolicyUrl": "https://stripe.com/privacy"
+    },
+    {
+      "vendorName": "Square",
+      "privacyPolicyUrl": "https://squareup.com/privacy"
+    },
+    {
+      "vendorName": "Authorize.Net",
+      "privacyPolicyUrl": "https://www.authorize.net/privacy"
+    }
+  ],
+  "additionalDetails": "All payment processing is encrypted using SSL/TLS. We do not store credit card information on our servers."
+}
+```
+
+### Example 2: International payment services
+```
+Razorpay#https://razorpay.com/privacy_Braintree#https://www.braintreepayments.com/legal/braintree-privacy-policy_Adyen#https://www.adyen.com/policies-and-disclaimer/privacy-policy_Klarna#https://www.klarna.com/us/privacy-policy*Payment data is processed in compliance with PCI DSS standards. For EU customers, all transactions comply with GDPR regulations. Refunds are processed within 5-10 business days.
+```
+
+**Expected Output:**
+```json
+{
+  "vendors": [
+    {
+      "vendorName": "Razorpay",
+      "privacyPolicyUrl": "https://razorpay.com/privacy"
+    },
+    {
+      "vendorName": "Braintree",
+      "privacyPolicyUrl": "https://www.braintreepayments.com/legal/braintree-privacy-policy"
+    },
+    {
+      "vendorName": "Adyen",
+      "privacyPolicyUrl": "https://www.adyen.com/policies-and-disclaimer/privacy-policy"
+    },
+    {
+      "vendorName": "Klarna",
+      "privacyPolicyUrl": "https://www.klarna.com/us/privacy-policy"
+    }
+  ],
+  "additionalDetails": "Payment data is processed in compliance with PCI DSS standards. For EU customers, all transactions comply with GDPR regulations. Refunds are processed within 5-10 business days."
+}
+```
+
+---
+
+## Quick Reference: Delimiter Meanings
+
+### Third-Party Services:
+- `_` = Separates categories
+- `#` = Separates services within a category  
+- `$` = Separates provider from service
+- `^` = Separates flags
+- `*` = Starts "Other" category
+
+### AI Services:
+- `_` = Separates items in each section
+- `#` = Separates functions from platforms
+- `*` = Separates before opt-out methods
+
+### Online Payments:
+- `#` = Separates vendor name from URL
+- `_` = Separates vendors
+- `*` = Separates before additional details
