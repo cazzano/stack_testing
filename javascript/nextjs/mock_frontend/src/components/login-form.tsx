@@ -80,6 +80,17 @@ const formSchema = z.object({
     marketingConsent: z.enum(["yes", "no"]).default("no"),
     marketingSms: z.enum(["yes", "no"]).default("no"),
     marketingMethods: z.array(z.string()).default([]),
+    customMarketingMethod: z.string().optional(),
+
+    // Step 5
+    shareWithThirdParties: z.enum(["yes", "no"]).default("no"),
+    thirdPartyCategories: z.array(z.string()).default([]),
+    businessTransfers: z.enum(["yes", "no"]).default("no"),
+    shareWithAffiliates: z.enum(["yes", "no"]).default("no"),
+    shareWithPartners: z.enum(["yes", "no"]).default("no"),
+    otherUsersDisclosure: z.enum(["yes", "no"]).default("no"),
+    useGoogleMaps: z.enum(["yes", "no"]).default("no"),
+    customThirdPartyCategory: z.string().optional(),
 });
 
 interface LoginFormProps {
@@ -141,6 +152,16 @@ export function LoginForm({ onStepChange }: LoginFormProps) {
             marketingConsent: "no",
             marketingSms: "no",
             marketingMethods: [],
+            customMarketingMethod: "",
+
+            shareWithThirdParties: "no",
+            thirdPartyCategories: [],
+            businessTransfers: "no",
+            shareWithAffiliates: "no",
+            shareWithPartners: "no",
+            otherUsersDisclosure: "no",
+            useGoogleMaps: "no",
+            customThirdPartyCategory: "",
         },
     });
 
@@ -181,80 +202,156 @@ export function LoginForm({ onStepChange }: LoginFormProps) {
         console.log("Submitting final form values:", values);
         setTimeout(() => {
             setIsLoading(false);
-            alert("Step 3 submitted! All data collected.");
+            alert("Privacy Policy details updated! Progress saved.");
         }, 2000);
     }
 
     return (
         <div className="w-full max-w-3xl mx-auto py-8">
-            <div className="mb-8 pl-4 lg:pl-0">
-                <h2 className="text-2xl font-extrabold text-slate-900 mb-1 lg:text-3xl">
-                    {currentStep === 1 && "Privacy Policy Uses"}
-                    {currentStep === 2 && "User Information"}
-                    {currentStep === 3 && "Collection of Information"}
-                </h2>
-                <p className="text-sm text-slate-500 font-semibold tracking-tight">
-                    {currentStep === 1 && "What will this Privacy Policy be used for?"}
-                    {currentStep === 2 && "User Location"}
-                    {currentStep === 3 && "Don't reveal your secrets, just your data."}
-                </p>
+            <div className="mb-8 pl-4 lg:pl-0 flex items-center justify-between">
+                <div>
+                    <h2 className="text-2xl font-extrabold text-slate-900 mb-1 lg:text-3xl">
+                        {currentStep === 1 && "Privacy Policy Uses"}
+                        {currentStep === 2 && "User Information"}
+                        {currentStep === 3 && "Collection of Information"}
+                        {currentStep === 4 && "Use of Information"}
+                        {currentStep === 5 && "Disclosure of Information"}
+                    </h2>
+                    <p className="text-sm text-slate-500 font-semibold tracking-tight">
+                        {currentStep === 1 && "What will this Privacy Policy be used for?"}
+                        {currentStep === 2 && "User Location"}
+                        {currentStep === 3 && "Don't reveal your secrets, just your data."}
+                        {currentStep === 4 && "How the information will be used."}
+                        {currentStep === 5 && "When and how you share personal data with others"}
+                    </p>
+                </div>
+                {currentStep === 1 && (
+                    <Button variant="outline" size="sm" className="hidden border-slate-200 text-slate-600 font-bold text-[10px] uppercase tracking-widest px-4 h-9 lg:flex items-center gap-2 rounded-lg hover:bg-slate-50 transition-all shadow-sm">
+                        <div className="w-4 h-4 rounded-full bg-slate-100 flex items-center justify-center">
+                            <div className="w-1.5 h-1.5 rounded-full bg-slate-400" />
+                        </div>
+                        Preview
+                    </Button>
+                )}
             </div>
 
             <Form {...form}>
                 <form className="space-y-12">
                     {currentStep === 1 && (
-                        <div className="space-y-12">
-                            <Card className="border-slate-200 shadow-sm overflow-hidden">
-                                <CardHeader className="bg-slate-50/50 border-b py-5 pl-7">
-                                    <CardTitle className="text-lg font-bold">Account Verification</CardTitle>
-                                    <CardDescription className="text-xs">Verify your credentials before saving changes.</CardDescription>
-                                </CardHeader>
-                                <CardContent className="pt-8 px-7 space-y-6">
-                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                                        <FormField control={form.control} name="username" render={({ field }) => (
-                                            <FormItem>
-                                                <FormLabel className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Username</FormLabel>
-                                                <FormControl><Input placeholder="johndoe" {...field} className="bg-slate-50/50 border-slate-200 text-sm h-11" /></FormControl>
-                                                <FormMessage />
-                                            </FormItem>
-                                        )} />
-                                        <FormField control={form.control} name="password" render={({ field }) => (
-                                            <FormItem>
-                                                <FormLabel className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Password</FormLabel>
-                                                <FormControl><Input type="password" placeholder="••••••••" {...field} className="bg-slate-50/50 border-slate-200 text-sm h-11" /></FormControl>
-                                                <FormMessage />
-                                            </FormItem>
-                                        )} />
-                                    </div>
-                                </CardContent>
-                            </Card>
-
-                            <div className="space-y-10 px-4 lg:px-0">
-                                <h3 className="font-extrabold text-slate-800 border-b-2 border-slate-100 pb-3 text-lg">What will this Privacy Policy be used for?</h3>
+                        <div className="space-y-12 animate-in fade-in slide-in-from-right-4 duration-500">
+                            {/* What will this Privacy Policy be used for? */}
+                            <div className="space-y-10">
+                                <h3 className="font-extrabold text-slate-800 border-b-2 border-slate-100 pb-3 text-lg flex items-center gap-2">
+                                    What will this Privacy Policy be used for?
+                                </h3>
                                 <div className="space-y-8">
                                     {[
-                                        { name: "website" as const, label: "Website", urlKey: "websiteUrl" as const, urlLabel: "What is the URL address of your website?", desc: "Enter the URL of the website for which you are making this Privacy Policy." },
-                                        { name: "mobileApp" as const, label: "Mobile application", urlKey: "mobileAppName" as const, urlLabel: "What is the name of your mobile application?", desc: "Enter the full name of your mobile app." },
-                                        { name: "facebookApp" as const, label: "Facebook application", urlKey: "facebookAppName" as const, urlLabel: "What is the name of your Facebook application?", desc: "Enter the full name of your Facebook app." }
+                                        { name: "website" as const, label: "Website", urlKey: "websiteUrl" as const, urlLabel: "What is the URL address of your website?", desc: "Enter the URL of the website for which you are making this Privacy Policy.", placeholder: "e.g., cazzano.vercel.app" },
+                                        { name: "mobileApp" as const, label: "Mobile application", urlKey: "mobileAppName" as const, urlLabel: "What is the name of your mobile application?", desc: "Enter the full name of your mobile app.", placeholder: "e.g., Logfile App" },
+                                        { name: "facebookApp" as const, label: "Facebook application", urlKey: "facebookAppName" as const, urlLabel: "What is the name of your Facebook application?", desc: "Enter the full name of your Facebook app.", placeholder: "e.g., Advita App" }
                                     ].map((item) => (
                                         <div key={item.name} className="space-y-4">
                                             <FormField control={form.control} name={item.name} render={({ field }) => (
                                                 <FormItem className="flex flex-row items-center space-x-3.5 space-y-0">
-                                                    <FormControl><Checkbox checked={field.value as boolean} onCheckedChange={field.onChange} className="data-[state=checked]:bg-blue-600 border-slate-300 w-5 h-5" /></FormControl>
+                                                    <FormControl><Checkbox checked={field.value as boolean} onCheckedChange={field.onChange} className="data-[state=checked]:bg-slate-900 border-slate-300 w-5 h-5 rounded" /></FormControl>
                                                     <FormLabel className="font-bold text-slate-800 text-[15px]">{item.label}</FormLabel>
                                                 </FormItem>
                                             )} />
                                             {form.watch(item.name) && (
-                                                <FormField control={form.control} name={item.urlKey} render={({ field }) => (
-                                                    <FormItem className="pl-8.5 space-y-2">
-                                                        <FormLabel className="text-sm font-bold text-slate-900">{item.urlLabel}</FormLabel>
-                                                        <FormDescription className="text-xs text-slate-500 italic pb-1">{item.desc}</FormDescription>
-                                                        <FormControl><Input placeholder="e.g., myawesomeproject.com" {...field} className="border-slate-200 text-sm h-11 bg-white/50" /></FormControl>
-                                                    </FormItem>
-                                                )} />
+                                                <div className="pl-8.5 space-y-6 animate-in fade-in slide-in-from-left-2 duration-300">
+                                                    <div className="space-y-4">
+                                                        <h4 className="text-[15px] font-bold text-slate-900">{item.label}</h4>
+                                                        <FormField control={form.control} name={item.urlKey} render={({ field }) => (
+                                                            <FormItem className="space-y-4">
+                                                                <div className="flex items-center gap-1.5">
+                                                                    <FormLabel className="text-sm font-bold text-slate-900">{item.urlLabel}</FormLabel>
+                                                                    {item.name === "mobileApp" && <Info size={14} className="text-slate-400" />}
+                                                                </div>
+                                                                <p className="text-[11px] text-slate-400 italic">Enter the full name of your {item.label.toLowerCase()}.</p>
+                                                                <FormControl><Input placeholder={item.placeholder} {...field} className="border-slate-200 text-sm h-11 bg-white" /></FormControl>
+                                                            </FormItem>
+                                                        )} />
+                                                    </div>
+                                                </div>
                                             )}
                                         </div>
                                     ))}
+                                </div>
+                            </div>
+
+                            {/* English Preference */}
+                            <div className="space-y-10">
+                                <h3 className="font-extrabold text-slate-800 border-b-2 border-slate-100 pb-3 text-lg">English Preference</h3>
+                                <FormField control={form.control} name="englishPreference" render={({ field }) => (
+                                    <FormItem className="space-y-4">
+                                        <FormLabel className="text-[15px] font-bold text-slate-900">What type of English spelling do you want to be used in this Privacy Policy?</FormLabel>
+                                        <FormControl>
+                                            <RadioGroup onValueChange={field.onChange} defaultValue={field.value} className="flex flex-col space-y-2.5">
+                                                <FormItem className="flex items-center space-x-3.5 space-y-0"><FormControl><RadioGroupItem value="american" className="w-5 h-5 border-slate-300" /></FormControl><FormLabel className="text-sm font-medium text-slate-700">American English</FormLabel></FormItem>
+                                                <FormItem className="flex items-center space-x-3.5 space-y-0"><FormControl><RadioGroupItem value="british" className="w-5 h-5 border-slate-300" /></FormControl><FormLabel className="text-sm font-medium text-slate-700">British English</FormLabel></FormItem>
+                                            </RadioGroup>
+                                        </FormControl>
+                                    </FormItem>
+                                )} />
+
+                                {/* Tip Box for English Preference */}
+                                <div className="bg-blue-50/70 border border-blue-100 p-8 rounded-xl space-y-6">
+                                    <div className="flex items-center gap-2">
+                                        <Info size={18} className="text-blue-600" />
+                                        <h5 className="text-[13px] font-bold text-blue-900">Tips:</h5>
+                                    </div>
+                                    <p className="text-[11px] text-blue-800 leading-relaxed">
+                                        Certain words will be spelled differently depending on if you are using American English or British English. For example, words that end in -or in American English, typically end in -our in British English.
+                                    </p>
+                                    <p className="text-[11px] text-blue-800 leading-relaxed italic">
+                                        There are several words used in this Privacy Policy that would be spelled differently (e.g., behavior - behaviour; personalized - personalised; fulfill - fulfil).
+                                    </p>
+                                </div>
+                            </div>
+
+                            {/* Use and Description */}
+                            <div className="space-y-10">
+                                <h3 className="font-extrabold text-slate-800 border-b-2 border-slate-100 pb-3 text-lg">Use and Description</h3>
+                                <FormField control={form.control} name="includeDescription" render={({ field }) => (
+                                    <FormItem className="space-y-4">
+                                        <div className="flex items-center gap-1.5">
+                                            <FormLabel className="text-[15px] font-bold text-slate-900">Do you want to include a description about your product or service?</FormLabel>
+                                            <Info size={14} className="text-slate-400" />
+                                        </div>
+                                        <FormControl>
+                                            <RadioGroup onValueChange={field.onChange} defaultValue={field.value} className="flex flex-col space-y-2.5">
+                                                <FormItem className="flex items-center space-x-3.5 space-y-0"><FormControl><RadioGroupItem value="yes" className="w-5 h-5 border-slate-300" /></FormControl><FormLabel className="text-sm font-medium text-slate-700">Yes</FormLabel></FormItem>
+                                                <FormItem className="flex items-center space-x-3.5 space-y-0"><FormControl><RadioGroupItem value="no" className="w-5 h-5 border-slate-300" /></FormControl><FormLabel className="text-sm font-medium text-slate-700">No</FormLabel></FormItem>
+                                            </RadioGroup>
+                                        </FormControl>
+                                    </FormItem>
+                                )} />
+
+                                {form.watch("includeDescription") === "yes" && (
+                                    <div className="space-y-8 animate-in fade-in slide-in-from-top-2 duration-300">
+                                        <FormField control={form.control} name="productName" render={({ field }) => (
+                                            <FormItem className="space-y-2">
+                                                <FormControl><Input placeholder="e.g., Resource management" {...field} className="h-11 border-slate-200 text-sm" /></FormControl>
+                                            </FormItem>
+                                        )} />
+                                        <FormField control={form.control} name="productDescription" render={({ field }) => (
+                                            <FormItem className="space-y-4">
+                                                <FormLabel className="text-sm font-bold text-slate-900">Enter a description of your product or service:</FormLabel>
+                                                <FormControl><Textarea {...field} placeholder="e.g., It will automatically manages the important resources of your device to the right things." className="min-h-[120px] border-slate-200 text-sm resize-none bg-white" /></FormControl>
+                                            </FormItem>
+                                        )} />
+                                    </div>
+                                )}
+
+                                {/* Tip Box for Step 1 Bottom */}
+                                <div className="bg-blue-50/70 border border-blue-100 p-8 rounded-xl space-y-6">
+                                    <div className="flex items-center gap-2">
+                                        <Info size={18} className="text-blue-600" />
+                                        <h5 className="text-[13px] font-bold text-blue-900">Tips:</h5>
+                                    </div>
+                                    <p className="text-[11px] text-blue-800 leading-relaxed font-bold">
+                                        A privacy policy (also referred to as a privacy notice) is a statement or legal document that describes how a company, website, or app collects, uses, maintains, and shares information collected from its users. Most countries require any website that collects personal information from its users to have a written privacy policy posted on the website.
+                                    </p>
                                 </div>
                             </div>
                         </div>
@@ -1057,6 +1154,217 @@ export function LoginForm({ onStepChange }: LoginFormProps) {
                                     </p>
                                     <p className="text-[11px] text-blue-800 leading-relaxed italic">
                                         Ensure your use of legal bases matches the GDPR's intended use to avoid legal complex with your policy.
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+
+                    {currentStep === 5 && (
+                        <div className="space-y-12 animate-in fade-in slide-in-from-right-4 duration-500">
+                            {/* Step 5 Header */}
+                            <div className="space-y-2">
+                                <div className="flex items-center gap-2 mb-1">
+                                    <div className="w-8 h-8 rounded-lg bg-teal-600 flex items-center justify-center text-white font-bold text-sm">5</div>
+                                    <h2 className="text-2xl font-black text-slate-900 tracking-tight">Disclosure of Information</h2>
+                                </div>
+                                <p className="text-slate-500 text-sm font-medium">When and how you share personal data with others</p>
+                            </div>
+
+                            {/* Business Transfers */}
+                            <div className="space-y-8">
+                                <h3 className="font-extrabold text-slate-900 text-lg border-b-2 border-slate-100 pb-3">Business Transfers</h3>
+                                <div className="space-y-6">
+                                    <FormField control={form.control} name="businessTransfers" render={({ field }) => (
+                                        <FormItem className="space-y-4">
+                                            <FormLabel className="text-sm font-bold text-slate-900 italic">Do you share or transfer user information in connection with or during negotiations of any merger, sale of company assets, financing, or acquisition of all or a portion of our business to another company?</FormLabel>
+                                            <FormControl>
+                                                <RadioGroup onValueChange={field.onChange} defaultValue={field.value} className="flex flex-col space-y-2.5">
+                                                    <FormItem className="flex items-center space-x-3.5 space-y-0"><FormControl><RadioGroupItem value="yes" /></FormControl><FormLabel className="text-sm font-medium">Yes</FormLabel></FormItem>
+                                                    <FormItem className="flex items-center space-x-3.5 space-y-0"><FormControl><RadioGroupItem value="no" /></FormControl><FormLabel className="text-sm font-medium">No</FormLabel></FormItem>
+                                                </RadioGroup>
+                                            </FormControl>
+                                        </FormItem>
+                                    )} />
+                                </div>
+                            </div>
+
+                            {/* Affiliates */}
+                            <div className="space-y-8">
+                                <h3 className="font-extrabold text-slate-900 text-lg border-b-2 border-slate-100 pb-3">Affiliates</h3>
+                                <div className="space-y-6">
+                                    <FormField control={form.control} name="shareWithAffiliates" render={({ field }) => (
+                                        <FormItem className="space-y-4">
+                                            <FormLabel className="text-sm font-bold text-slate-900 italic">Do you share your users' information with your affiliates?</FormLabel>
+                                            <p className="text-[11px] text-slate-400">If so, we will require those affiliates to honor this privacy policy. Affiliates include our parent company and any subsidiaries, joint venture partners or other companies that we control or that are under common control with us.</p>
+                                            <FormControl>
+                                                <RadioGroup onValueChange={field.onChange} defaultValue={field.value} className="flex flex-col space-y-2.5">
+                                                    <FormItem className="flex items-center space-x-3.5 space-y-0"><FormControl><RadioGroupItem value="yes" /></FormControl><FormLabel className="text-sm font-medium">Yes</FormLabel></FormItem>
+                                                    <FormItem className="flex items-center space-x-3.5 space-y-0"><FormControl><RadioGroupItem value="no" /></FormControl><FormLabel className="text-sm font-medium">No</FormLabel></FormItem>
+                                                </RadioGroup>
+                                            </FormControl>
+                                        </FormItem>
+                                    )} />
+                                </div>
+                            </div>
+
+                            {/* Business Partners */}
+                            <div className="space-y-8">
+                                <h3 className="font-extrabold text-slate-900 text-lg border-b-2 border-slate-100 pb-3">Business Partners</h3>
+                                <div className="space-y-6">
+                                    <FormField control={form.control} name="shareWithPartners" render={({ field }) => (
+                                        <FormItem className="space-y-4">
+                                            <FormLabel className="text-sm font-bold text-slate-900 italic">Do you share your users' information with your business partners?</FormLabel>
+                                            <p className="text-[11px] text-slate-400">Such as to offer you certain products, services or promotions.</p>
+                                            <FormControl>
+                                                <RadioGroup onValueChange={field.onChange} defaultValue={field.value} className="flex flex-col space-y-2.5">
+                                                    <FormItem className="flex items-center space-x-3.5 space-y-0"><FormControl><RadioGroupItem value="yes" /></FormControl><FormLabel className="text-sm font-medium">Yes</FormLabel></FormItem>
+                                                    <FormItem className="flex items-center space-x-3.5 space-y-0"><FormControl><RadioGroupItem value="no" /></FormControl><FormLabel className="text-sm font-medium">No</FormLabel></FormItem>
+                                                </RadioGroup>
+                                            </FormControl>
+                                        </FormItem>
+                                    )} />
+                                </div>
+                            </div>
+
+                            {/* Google Maps Platform APIs */}
+                            <div className="space-y-8">
+                                <h3 className="font-extrabold text-slate-900 text-lg border-b-2 border-slate-100 pb-3 uppercase tracking-tighter">Google Maps Platform APIs</h3>
+                                <div className="space-y-6">
+                                    <FormField control={form.control} name="useGoogleMaps" render={({ field }) => (
+                                        <FormItem className="space-y-4">
+                                            <FormLabel className="text-sm font-bold text-slate-900 italic">Do you use Google Maps Platform APIs?</FormLabel>
+                                            <p className="text-[11px] text-slate-400">If so, you must state that you use Google Maps Platform APIs and that your use is subject to the Google Privacy Policy.</p>
+                                            <FormControl>
+                                                <RadioGroup onValueChange={field.onChange} defaultValue={field.value} className="flex flex-col space-y-2.5">
+                                                    <FormItem className="flex items-center space-x-3.5 space-y-0"><FormControl><RadioGroupItem value="yes" /></FormControl><FormLabel className="text-sm font-medium">Yes</FormLabel></FormItem>
+                                                    <FormItem className="flex items-center space-x-3.5 space-y-0"><FormControl><RadioGroupItem value="no" /></FormControl><FormLabel className="text-sm font-medium">No</FormLabel></FormItem>
+                                                </RadioGroup>
+                                            </FormControl>
+                                        </FormItem>
+                                    )} />
+                                </div>
+                            </div>
+
+                            {/* Disclosure Regarding Other Users */}
+                            <div className="space-y-8">
+                                <h3 className="font-extrabold text-slate-900 text-lg border-b-2 border-slate-100 pb-3">Disclosure Regarding Other Users</h3>
+                                <div className="space-y-6">
+                                    <FormField control={form.control} name="otherUsersDisclosure" render={({ field }) => (
+                                        <FormItem className="space-y-4">
+                                            <FormLabel className="text-sm font-bold text-slate-900 italic">Do you share personal information when users interact with public areas of the services?</FormLabel>
+                                            <p className="text-[11px] text-slate-400">Such as when users share personal information or otherwise interact with public areas of the services, such personal information may be viewed by all users and may be publicly-distributed outside the services in perpetuity.</p>
+                                            <FormControl>
+                                                <RadioGroup onValueChange={field.onChange} defaultValue={field.value} className="flex flex-col space-y-2.5">
+                                                    <FormItem className="flex items-center space-x-3.5 space-y-0"><FormControl><RadioGroupItem value="yes" /></FormControl><FormLabel className="text-sm font-medium">Yes</FormLabel></FormItem>
+                                                    <FormItem className="flex items-center space-x-3.5 space-y-0"><FormControl><RadioGroupItem value="no" /></FormControl><FormLabel className="text-sm font-medium">No</FormLabel></FormItem>
+                                                </RadioGroup>
+                                            </FormControl>
+                                        </FormItem>
+                                    )} />
+                                </div>
+                            </div>
+
+                            {/* Sharing with Third Parties */}
+                            <div className="space-y-8">
+                                <h3 className="font-extrabold text-slate-900 text-lg border-b-2 border-slate-100 pb-3">When do we share your personal information with third parties?</h3>
+                                <div className="space-y-6">
+                                    <FormField control={form.control} name="shareWithThirdParties" render={({ field }) => (
+                                        <FormItem className="space-y-4">
+                                            <FormLabel className="text-sm font-bold text-slate-900 italic">Do you need to share users' personal information in any specific situations?</FormLabel>
+                                            <p className="text-[11px] text-slate-400">We may process or share your data that we hold based on the following legal basis: Consent, Legitimate Interests, Performance of a Contract, Legal Obligations, and Vital Interests.</p>
+                                            <FormControl>
+                                                <RadioGroup onValueChange={field.onChange} defaultValue={field.value} className="flex flex-col space-y-2.5">
+                                                    <FormItem className="flex items-center space-x-3.5 space-y-0"><FormControl><RadioGroupItem value="yes" /></FormControl><FormLabel className="text-sm font-medium">Yes</FormLabel></FormItem>
+                                                    <FormItem className="flex items-center space-x-3.5 space-y-0"><FormControl><RadioGroupItem value="no" /></FormControl><FormLabel className="text-sm font-medium">No</FormLabel></FormItem>
+                                                </RadioGroup>
+                                            </FormControl>
+                                        </FormItem>
+                                    )} />
+
+                                    {form.watch("shareWithThirdParties") === "yes" && (
+                                        <div className="bg-slate-50/50 border border-slate-200 p-8 rounded-xl space-y-6 animate-in fade-in slide-in-from-left-2 transition-all">
+                                            <p className="text-sm font-bold text-slate-900 border-b border-slate-200 pb-3">If you share that personal information with third parties, select the type of third parties you share with:</p>
+                                            <FormField control={form.control} name="thirdPartyCategories" render={({ field }) => (
+                                                <FormItem className="space-y-4">
+                                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-y-4 gap-x-10">
+                                                        {[
+                                                            "Advertising, Direct Marketing, and Lead Generation",
+                                                            "Affiliate Marketing Programs",
+                                                            "Cloud Computing Services",
+                                                            "Communication and Collaboration Tools",
+                                                            "Data Analytics Services",
+                                                            "Data Storage Service Providers",
+                                                            "Finance and Accounting Tools",
+                                                            "Government Entities",
+                                                            "Order Fulfillment Service Providers",
+                                                            "Payment Processors",
+                                                            "Product Engineering and Design Tools",
+                                                            "Retargeting Platforms",
+                                                            "Sales and Marketing Tools",
+                                                            "Social Networks",
+                                                            "Testing Tools",
+                                                            "User Account Registration and Authentication Services",
+                                                            "Website Hosting Service Providers",
+                                                            "Other"
+                                                        ].map((val) => (
+                                                            <div key={val} className="flex flex-row items-start space-x-3 space-y-0">
+                                                                <Checkbox
+                                                                    checked={field.value?.includes(val)}
+                                                                    onCheckedChange={(checked) => {
+                                                                        return checked
+                                                                            ? field.onChange([...(field.value || []), val])
+                                                                            : field.onChange(field.value?.filter((v: string) => v !== val));
+                                                                    }}
+                                                                    className="w-5 h-5 border-slate-300 rounded mt-0.5"
+                                                                />
+                                                                <span className="text-xs font-semibold text-slate-700 leading-tight">{val}</span>
+                                                            </div>
+                                                        ))}
+                                                    </div>
+                                                </FormItem>
+                                            )} />
+                                        </div>
+                                    )}
+
+                                    {form.watch("thirdPartyCategories")?.includes("Other") && (
+                                        <div className="pt-4 animate-in fade-in slide-in-from-top-2 duration-300">
+                                            <FormField control={form.control} name="customThirdPartyCategory" render={({ field }) => (
+                                                <FormItem className="space-y-4">
+                                                    <FormLabel className="text-sm font-bold text-slate-900">Please specify other third party categories:</FormLabel>
+                                                    <div className="flex gap-3">
+                                                        <FormControl>
+                                                            <Input {...field} placeholder="e.g., Legal consultants, logistics partners..." className="h-11 border-slate-200" />
+                                                        </FormControl>
+                                                        <Button type="button" size="sm" className="bg-slate-900 text-xs px-6 h-11 uppercase" onClick={() => {
+                                                            if (field.value) {
+                                                                const currentCategories = form.getValues("thirdPartyCategories") || [];
+                                                                if (!currentCategories.includes(field.value)) {
+                                                                    form.setValue("thirdPartyCategories", [...currentCategories, field.value]);
+                                                                    form.setValue("customThirdPartyCategory", "");
+                                                                }
+                                                            }
+                                                        }}>+ ADD</Button>
+                                                    </div>
+                                                </FormItem>
+                                            )} />
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
+
+                            {/* Final Step 5 Tips */}
+                            <div className="space-y-10">
+                                <div className="bg-blue-50/70 border border-blue-100 p-8 rounded-xl space-y-6">
+                                    <div className="flex items-center gap-2">
+                                        <Info size={18} className="text-blue-600" />
+                                        <h5 className="text-[13px] font-bold text-blue-900">Tips:</h5>
+                                    </div>
+                                    <p className="text-[11px] text-blue-800 leading-relaxed font-bold">
+                                        Transparency is key!
+                                    </p>
+                                    <p className="text-[11px] text-blue-800 leading-relaxed italic">
+                                        Being clear about who you share data with builds trust and ensures compliance with privacy regulations like GDPR and CCPA.
                                     </p>
                                 </div>
                             </div>
