@@ -1,0 +1,109 @@
+tracking_tech -->
+
+input -->
+
+1
+
+expected output -->
+
+{
+
+[
+{"Cookies & Web Beacons":"true"}
+
+]
+
+}
+
+Important note --> 1 means cookies & web beacons and 2 means google map apis and 3 means both and 4 means neither
+
+cookie -->
+
+input string -->
+
+yes_yes_https://cookie.com/link
+
+expected output -->
+
+{
+
+"confirmation":"true"
+"confirmation_link":"true"
+[
+
+{
+
+"link":"https://cookie.com/link"
+
+}
+]
+
+}
+
+important note !! --> the first string will be about confirmations in true or false and after underscore it will be again about confirmation and after underscore again it will about the link, all in a sequence.
+
+Google Map Apis -->
+
+input string -->
+
+yes_yes*live location_ip location of person;yes_yes_6
+
+
+expected output -->
+
+{
+
+"confirmation_law":"true",
+"confirmation":"true"
+[
+"custom_things"
+{
+"live location":"true",
+"ip location of person"
+
+}
+],
+[
+
+"confirmation":"true",
+"confirmation_cache_location":"true"
+{
+
+"months":6
+
+}
+
+]
+
+}
+
+important note !! --> for the first block[] --> the first string will be about the confirmation in true or false and after underscore it will be again about the confirmation in true or false and after after * it will be about the custom things seperated by underscores and after ; the second block starts with confirmation in true or false and after underscore it will be a confirmation again and after underscore it will be time in months, all in a sequence.
+
+google analytics -->
+
+input -->
+
+yes*remarketting apis_map apis_custom endpoints
+
+expected output -->
+
+{
+
+"confirmation":"true"
+[
+
+"custom_things":
+{
+
+"remarketting apis":"true",
+"map apis":"true",
+"custom endpoints":"true"
+
+}
+
+]
+
+}
+important note !!! --> the first string will be about the confirmation in true or falsa and after * it will be about the custom things seperated by underscores 
+
+
