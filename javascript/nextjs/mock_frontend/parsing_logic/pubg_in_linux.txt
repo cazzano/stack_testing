@@ -1,0 +1,44 @@
+Basic Architecture
+pythonfrom evdev import InputDevice, UInput, ecodes, AbsInfo
+import asyncio
+
+# Read mouse movements
+mouse = InputDevice('/dev/input/mouse0')
+
+# Create virtual touchscreen that Waydroid sees
+capabilities = {
+    ecodes.EV_ABS: [
+        (ecodes.ABS_MT_POSITION_X, AbsInfo(0, 0, 1920, 0, 0, 0)),
+        (ecodes.ABS_MT_POSITION_Y, AbsInfo(0, 0, 1080, 0, 0, 0)),
+        (ecodes.ABS_MT_TRACKING_ID, AbsInfo(0, 0, 65535, 0, 0, 0)),
+    ],
+    ecodes.EV_KEY: [ecodes.BTN_TOUCH]
+}
+
+ui = UInput(capabilities, name='virtual-touchscreen')
+
+# Translate mouse delta to touch drag at screen center
+camera_mode = False
+touch_x, touch_y = 960, 540  # screen center
+
+# When mouse moves in camera mode:
+# - Simulate continuous touch drag
+# - Move touch point based on mouse delta
+# - This makes PUBG think you're dragging on screen (camera control)
+Challenges You'll Face
+
+Finding correct input devices for both mouse and Waydroid
+Calculating proper touch coordinates and sensitivity
+Handling Wayland's input isolation (might need root/proper permissions)
+Smooth touch event timing to avoid jitter
+
+Would You Like Me to Create a Working Script?
+I can build you a functional Python script that:
+
+✅ Captures mouse input
+✅ Toggles between cursor/camera mode (e.g., with Right-Alt)
+✅ Injects touch events for camera control
+✅ Maps WASD to touch points for movement
+✅ Adjustable sensitivity
+
+Should I create this for you?

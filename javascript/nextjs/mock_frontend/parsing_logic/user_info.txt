@@ -1,0 +1,105 @@
+user_location -->
+
+input string -->
+
+1_1_1
+
+
+expected output -->
+
+{
+
+[
+
+{
+  "users_in_united_states":"true",
+  "users_in_EU_UK_Switzerland_Iceland_Liechtenstein_Or_Norway":"true",
+  "users_in_canada":"true" 
+}
+
+
+]
+
+
+
+}
+
+important note !!!! --> these data will always be taken in sequence and 1 means true and 0 means falsa okay.
+
+
+user_accounts -->
+
+
+input string -->
+
+yes_Log in to your account settings and update your user account._Contact us using the contact information provided._We will add a button in our website to perform this thing.*This is custom setting*This is custom setting too.
+
+
+expected_output -->
+
+
+{
+
+"comfirmation":"true"
+
+[
+
+"preconfigured things":
+
+{
+
+"Log in to your account settings and update your user account.":"true",
+"Contact us using the contact information provided.":"true",
+"We will add a button in our website to perform this thing.":"true"
+},
+
+"custom_made_things":
+
+{
+
+"This is a custom setting":"true",
+"This is custom setting too":"true"
+}
+
+
+]
+
+
+
+}
+
+
+IMportant note !!!!---->  make sure the first string which will always contains about the true and false of confirmation and after that it should be an underscore (_) and and after underscore there will be preconfigured things and after (*) there will be custom things okay.
+
+
+user_age -->
+
+input string:
+
+yes_minor details regarding to minors.
+
+
+expected output -->
+
+
+{
+
+[
+
+"confirmation":"true"
+{
+"custom_language_regarding_to_minors":"minor details regarding to minors."
+
+
+}
+
+
+]
+
+
+
+
+}
+
+important note !!!--> the first string will be for the confirmation regarding true and false and the second thing after underscore (_) will be for the custom_lanuage regarding to the minors.
+

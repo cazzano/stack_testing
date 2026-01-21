@@ -1,0 +1,305 @@
+personal_info -->
+
+
+input_string -->
+
+
+Names_Phone numbers_Email addresses_Mailing addresses*Ligit Interests_Serious Info_More Serious Info
+
+expected output -->
+
+{
+
+[
+
+"preconfigured_things":
+
+{
+"Names":"true",
+"Phone numbers":"true",
+"Email addresses":"true",
+"Mailing addresses":"true"
+}
+
+custom_things:
+{
+
+"Ligit Interests":"true",
+"Serious Info":"true",
+"More Serious Info":"true"
+}
+
+
+]
+
+
+
+}
+
+
+important note !!!--> is that the first strings will be always about preconfigured things and sepereted by underscores (_) and after * will determines the custom things sepereated by the underscores (_).
+
+
+sensitive personal information -->
+
+
+input string -->
+
+yes_Health data_Financial data_Genetic data_Biometric data_Data about a person's sex life or sexual orientation*Lung Status_Brain Status_Kidney Status_Bones Status
+
+
+expected output -->
+
+
+{
+
+"confirmation":"true"
+[
+
+"preconfigured_things":
+
+{
+"Health data":"true",
+"Financial data":"true",
+"Genetic data":"true",
+"Biometric data":"true",
+"Data about a person's sex life or sexual orientation":"true"
+},
+
+"custom_things":
+
+{
+"Lung Status":"true",
+"Brain Status":"true",
+"Kidney Status":"true",
+"Bones Status":"true"
+}
+
+]
+
+
+}
+
+important note !!1--> the first thing will be about the confirmation regarding to true and false and after that underscore (_) it will be about the preconfigured things seperated by underscore(_) and after * will determines the custom things seperated by underscore (_).
+
+
+personal_info_from_social_media -->
+
+
+input -->
+
+1
+
+expected output -->
+
+{
+
+[
+
+{
+"confirmation":"true"
+}
+
+]
+
+}
+
+important note !!! --> 1 means true and 0 means false
+
+
+derivative_data -->
+
+
+input_string -->
+
+yes_Log and usage data_Device data_Location data*mac address;mac address of user_ip addresses also;ip addresses of users
+
+expected output -->
+
+
+{
+
+"confirmation":"true"
+
+[
+"preconfigured_things":
+{
+"Log and usage data":"true",
+"Device data":"true,
+"Location data":"true"
+},
+"custom_things":
+{
+
+"mac address":"mac address of user",
+"ip addresses also":"ip addresses of users"
+}
+]
+
+}
+
+important note !!! --> the first string will be for confirmation in true and false and after underscore it will be about preconfigured things seperated by underscore but after * it will be about custom things seperated by underscores but remember that each custom thing contains two data sets okay seperated by ; okay.
+
+
+geolocation -->
+
+
+input -->
+
+1
+
+expected output -->
+
+{
+
+[
+
+{
+"confirmation":"true"
+}
+
+]
+
+
+}
+
+important note !! --> 1 means true and 0 means false
+
+
+mobile_features --> 
+
+input_string -->
+
+yes_Bluetooth_Calendar_Camera*Local host ports_local storage_microphone access
+
+
+expected output -->
+
+
+{
+"confirmation":"true"
+[
+"preconfigured_things":
+{
+"Bluetooth":"true",
+"Calendar":"true",
+"Camera":"true"
+},
+
+"custom_things":
+
+{
+
+"Local host ports":"true",
+"local storage":"true",
+"microphone access":"true"
+
+}
+
+
+]
+
+}
+
+important note !!! --> the first string will be about the confirmation in truth and false and after underscore it will be about preconfigured thins seperated by underscores and after * it will be about custom things seperated by the underscores.
+
+info_about_mobiles -->
+
+input -->
+
+1
+
+expected output -->
+
+{
+
+[
+"confirmation":"true"
+]
+
+}
+
+!! important note --> 1 means true and 0 means false
+
+push_notifications -->
+
+input -->
+
+1
+
+expected output -->
+
+{
+
+[
+"confirmation":"true"
+]
+
+}
+
+!! important note --> 1 means true and 0 means false
+
+Offer Wall -->
+
+input -->
+
+1
+
+expected output -->
+
+{
+
+[
+"confirmation":"true"
+]
+
+}
+
+!! important note --> 1 means true and 0 means false
+
+Google API -->
+
+input -->
+
+1
+
+expected output -->
+
+{
+
+[
+"confirmation":"true"
+]
+
+}
+
+!! important note --> 1 means true and 0 means false
+
+personal_info_from_others -->
+
+
+input string -->
+
+yes_yes_yes
+
+expected output -->
+
+{
+
+"confirmation":"true"
+
+[
+
+{
+"GDPR_Law":"true",
+"EU_Law":"true"
+}
+
+]
+
+
+}
+
+important note !! --> the first string will be about confirmation in true or false and after underscore it will be GDPR law in true or false and after again underscore it will be about EU law in true or false and all in a sequence okay.
+
+

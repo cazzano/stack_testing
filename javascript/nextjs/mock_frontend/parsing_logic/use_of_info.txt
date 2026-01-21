@@ -1,0 +1,126 @@
+GDPR Law -->
+
+input -->
+
+1
+
+expected output -->
+
+{
+
+"confirmation":"true"
+
+}
+
+important note !!!! --> 1 mean true and 0 means false 
+
+
+Provision Of Services -->
+
+input String -->
+
+yes_To deliver and facilitate the delivery of services to the user_To enable user-to-user communications_To fulfill and manage users' orders*To maintain Ips of users;They should have internet access_To maintain eyes on mac addresses;They should have mobile or other device_To maintain eyes on prices of mobile;They should have atleast mobile
+
+
+expected output -->
+
+{
+
+"confirmation":"true"
+
+[
+"preconfigured_things":
+{
+"To deliver and facilitate the delivery of services to the user":"true",
+"To enable user-to-user communications":"true",
+"To fulfill and manage users' orders":"true"
+},
+"custom_things":"true"
+{
+"To maintain Ips of users":"They should have internet access",
+"To maintain eyes on mac addresses":"They should have mobile or other device",
+"To fulfill and manage users' orders":"They should have atleast mobile"
+}
+
+]
+
+
+}
+
+important note !! --> the first string will be about confirmation in true and false and after underscore it will be about preconfigured things seperated by underscores and after * it will about the custom things seperated by underscores but remember that it will contains two data sets seperated by ; okay
+
+legitimate interests -->
+
+input string -->
+
+yes_To deliver targeted advertising to users_To determine the effectiveness of promotional campaigns_To identify usage trends*the main reason is contracts;it will be about some companies:in order to protect mutual benefit_the main reason is about making contacts in companies;it will be about specific companies:in order to protect companies interests
+
+expected output -->
+
+{
+"confirmation":"true"
+[
+
+"preconfigured_things":
+{
+
+"To deliver targeted advertising to users":"true",
+"To determine the effectiveness of promotional campaigns":"true",
+"To identify usage trends":"True"
+},
+"custom_things":"true"
+{
+
+"the main reason is contracts":"it will be about some companies":"in order to protect mutual benefit",
+"the main reason is about making contacts in companies":"it will be about specific companies":"in order to protect companies interests"
+
+}
+
+]
+
+
+}
+
+important note !!! --> the first string will be about the confirmation in true or false and after underscore it will be about the preconfigured things seperated by underscores and after * it will be about the custom things seperated by the underscores but remember that it contains three datasets seperated by (;,:) okay.
+
+
+SMS -->
+
+input -->
+
+yes_yes_Clicking the unsubscribe link at the bottom of our marketing emails_Texting "STOP" or "UNSUBSCRIBE"_Adding a button named as "Deactivate Promo"*Clicking on settings button_clicking on deactivating button
+
+expected output -->
+
+{
+
+"confirmation":"true",
+"confirmation_about_sms":"true"
+[
+
+"preconfigured_things"
+{
+
+"Clicking the unsubscribe link at the bottom of our marketing emails":"true",
+'Texting "STOP" or "UNSUBSCRIBE"':"true",
+'Adding a button named as "Deactivate Promo"':"true"
+
+}
+
+"custom_things":
+{
+
+"Clicking on settings button":"true",
+"clicking on deactivating button":"true"
+
+}
+
+
+]
+
+
+}
+
+important note !! -->  the first string will be about confirmations in true or false and after underscore it will be about the preconfigured things seperated by underscores and after * it will be about the custom things seperated by the underscores. 
+
+
