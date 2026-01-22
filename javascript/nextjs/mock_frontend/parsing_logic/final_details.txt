@@ -1,0 +1,96 @@
+other_regions -->
+
+input string -->
+
+POPIA (South Africa)_Privacy Act (Australia)_The Privacy Act 2020 (Ne Zealand)
+
+
+expected output -->
+
+
+{
+[
+"preconfigured_things":
+
+{
+ "POPIA (South Africa)":"true",
+  "Privacy Act (Australia)":"true",
+  "The Privacy Act 2020 (New Zealand)":"true"
+
+}
+
+]
+
+
+}
+
+important note !! --> the preconfigured things sepereated by underscores.
+
+
+additional_clauses -->
+
+
+input string -->
+
+yes*Security Compilance_It is very complicated law.*Ip Leaks_Public IPS will be leaked.*Mac leaks_mac addresses leaked today.
+
+
+expected output -->
+
+{
+"confirmation":"true"
+
+[
+"custom_things"
+
+{
+   "Security Compilance":"It is very complicated law.",
+   "Ip Leaks":"Public IPS will be leaked.",
+   "Mac leaks":"mac addresses leaked today."
+}
+
+]
+
+
+}
+
+important note !! --> the first string will be about the confirmation in true or false and after * it will be about the custom things sepereated by the underscores.
+
+
+company -->
+
+input string -->
+
+Kairosys^yes_DBA Group&privacy@company.com*no%appeal@mail.com$+1 9475876847866
+
+expected output -->
+
+
+{
+[
+"company name":
+{
+"name":"Kairosys."
+
+},
+"confirmation_about_dba":"true",
+"short_name_or_trade_name_company":
+{
+"name":"DBA Group"
+
+},
+"email_address_privacy_inquiries":"privacy@company",
+"confirmation_about_appeal_mail":"true"
+{
+
+"appeal_mail":"appeal@mail.com",
+"phone_number":"+1 9475876847866"
+
+
+}
+
+]
+
+}
+
+important note !! --> the first string will be about the legal name of company and after ^ it will be about the confirmation of the dba in true or false and after underscore it will be about the short name of dba or trade of company and after & it will be about the email address of the inquiry mail and after  * it will be about the confirmation of the email of appeal and after % it will be about the email of the appeal and after $ it will be about the phone number
