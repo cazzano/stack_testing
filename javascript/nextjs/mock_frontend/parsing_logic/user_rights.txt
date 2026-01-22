@@ -1,0 +1,90 @@
+DPO -->
+
+input 
+1
+
+expected output -->
+
+{
+
+[
+{ "confirmation":"true"}
+
+]
+
+}
+
+important note !!! --> 1 means true and 0 means false.
+
+Account Consent Preferences -->
+
+input 
+1
+
+expected output -->
+
+{
+
+[
+{ "confirmation":"true"}
+
+]
+
+}
+
+important note !!! --> 1 means true and 0 means false.
+
+data subject access request -->
+
+input string -->
+
+yes_https://termlu.iol/link*If their country's privacy law grants the right to access (Recommended for most users)
+
+expected output -->
+
+
+{
+"confirmation":"true"
+
+[
+"link_to_service":
+{
+"link":"https://termlu.iol/link"
+
+},
+
+"request_from_user":
+{
+
+"If their country's privacy law grants the right to access (Recommended for most users)":"true"
+
+}
+
+
+]
+
+
+}
+
+important note !!! ==> the first string will be the confirmation and after underscore it will be about the link and after * it will be about the request and it will contains these two rules only (If their country's privacy law grants the right to access (Recommended for most users)) and this (Always)
+
+
+GPC -->
+
+input 
+1
+
+expected output -->
+
+{
+
+[
+{ "confirmation":"true"}
+
+]
+
+}
+
+important note !!! --> 1 means true and 0 means false.
+
+
