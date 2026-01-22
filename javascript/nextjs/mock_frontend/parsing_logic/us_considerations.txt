@@ -1,0 +1,511 @@
+US State Laws -->
+
+
+input -->
+
+1
+
+expected output -->
+
+{
+
+[
+
+{
+
+"confirmation":"false"
+
+}
+
+]
+
+
+}
+
+important note !!! --> 1 means true and 0 means false
+
+Disclosure_Of_Info -->
+
+input string -->
+
+Targeting cookies / marketing cookies_Social media cookies_Beacons / pixels / tags*Click Redirects_Other Important Things_Ips of local and public
+
+expected output -->
+
+
+{
+
+
+[
+
+"preconfigured_things":
+{
+
+"Targeting cookies / marketing cookies":"true",
+"Social media cookies":"true",
+"Beacons / pixels / tags"
+},
+"custom_things":
+{
+
+"Click Redirects":"true",
+"Other Important Things":"true",
+"Ips of local and public":"true"
+}
+
+]
+
+
+}
+
+important note !! --> the first strings will be about preconfigured things seperated by underscores and after * it will be about the custom things seperated by underscores.
+
+California Customer Records Personal INformation -->
+
+
+input string -->
+
+Collected^Disclosed^Sold_6
+
+expected output -->
+
+
+{
+
+[
+"actions":
+
+{
+"Collected":"true",
+"Disclosed":"true",
+"Sold":"true"
+},
+"expected_months":
+{
+"6 months":"true"
+}
+
+]
+
+}
+
+
+
+important note !! --> the first strings will be about the actions seperated by ^ and after underscore it will be about the time, remember that if it is in number it will be considered as months otherwise it will always be this string okay (As long as the user has an account with us).
+
+
+
+Identifiers -->
+
+
+input string -->
+
+Collected^Disclosed^Sold_As long as the user has an account with us.
+
+expected output -->
+
+
+{
+
+[
+"actions":
+
+{
+"Collected":"true",
+"Disclosed":"true",
+"Sold":"true"
+},
+"expected_months":
+{
+"As long as the user has an account with us":"true"
+}
+
+]
+
+}
+
+important note !! --> the first strings will be about the actions seperated by ^ and after underscore it will be about the time, remember that if it is in number it will be considered as months otherwise it will always be this string okay (As long as the user has an account with us).
+
+
+Characteristics  -->
+
+
+input string -->
+
+Collected^Disclosed^Sold_As long as the user has an account with us.
+
+expected output -->
+
+
+{
+
+[
+"actions":
+
+{
+"Collected":"true",
+"Disclosed":"true",
+"Sold":"true"
+},
+"expected_months":
+{
+"As long as the user has an account with us":"true"
+}
+
+]
+
+}
+
+important note !! --> the first strings will be about the actions seperated by ^ and after underscore it will be about the time, remember that if it is in number it will be considered as months otherwise it will always be this string okay (As long as the user has an account with us).
+
+COnsumer Data -->
+
+
+input string -->
+
+Collected^Disclosed^Sold_As long as the user has an account with us.
+
+expected output -->
+
+
+{
+
+[
+"actions":
+
+{
+"Collected":"true",
+"Disclosed":"true",
+"Sold":"true"
+},
+"expected_months":
+{
+"As long as the user has an account with us":"true"
+}
+
+]
+
+}
+
+important note !! --> the first strings will be about the actions seperated by ^ and after underscore it will be about the time, remember that if it is in number it will be considered as months otherwise it will always be this string okay (As long as the user has an account with us).
+
+Biometric Data -->
+
+
+input string -->
+
+Collected^Disclosed^Sold_As long as the user has an account with us.
+
+expected output -->
+
+
+{
+
+[
+"actions":
+
+{
+"Collected":"true",
+"Disclosed":"true",
+"Sold":"true"
+},
+"expected_months":
+{
+"As long as the user has an account with us":"true"
+}
+
+]
+
+}
+
+important note !! --> the first strings will be about the actions seperated by ^ and after underscore it will be about the time, remember that if it is in number it will be considered as months otherwise it will always be this string okay (As long as the user has an account with us).
+
+Internet Activity -->
+
+
+input string -->
+
+Collected^Disclosed^Sold_As long as the user has an account with us.
+
+expected output -->
+
+
+{
+
+[
+"actions":
+
+{
+"Collected":"true",
+"Disclosed":"true",
+"Sold":"true"
+},
+"expected_months":
+{
+"As long as the user has an account with us":"true"
+}
+
+]
+
+}
+
+important note !! --> the first strings will be about the actions seperated by ^ and after underscore it will be about the time, remember that if it is in number it will be considered as months otherwise it will always be this string okay (As long as the user has an account with us).
+
+Geolocation Data -->
+
+
+input string -->
+
+Collected^Disclosed^Sold_As long as the user has an account with us.
+
+expected output -->
+
+
+{
+
+[
+"actions":
+
+{
+"Collected":"true",
+"Disclosed":"true",
+"Sold":"true"
+},
+"expected_months":
+{
+"As long as the user has an account with us":"true"
+}
+
+]
+
+}
+
+important note !! --> the first strings will be about the actions seperated by ^ and after underscore it will be about the time, remember that if it is in number it will be considered as months otherwise it will always be this string okay (As long as the user has an account with us).
+
+Sensory Data -->
+
+
+input string -->
+
+Collected^Disclosed^Sold_As long as the user has an account with us.
+
+expected output -->
+
+
+{
+
+[
+"actions":
+
+{
+"Collected":"true",
+"Disclosed":"true",
+"Sold":"true"
+},
+"expected_months":
+{
+"As long as the user has an account with us":"true"
+}
+
+]
+
+}
+
+important note !! --> the first strings will be about the actions seperated by ^ and after underscore it will be about the time, remember that if it is in number it will be considered as months otherwise it will always be this string okay (As long as the user has an account with us).
+
+Professional and Employment Data -->
+
+
+input string -->
+
+Collected^Disclosed^Sold_As long as the user has an account with us.
+
+expected output -->
+
+
+{
+
+[
+"actions":
+
+{
+"Collected":"true",
+"Disclosed":"true",
+"Sold":"true"
+},
+"expected_months":
+{
+"As long as the user has an account with us":"true"
+}
+
+]
+
+}
+
+important note !! --> the first strings will be about the actions seperated by ^ and after underscore it will be about the time, remember that if it is in number it will be considered as months otherwise it will always be this string okay (As long as the user has an account with us).
+
+Education Information -->
+
+
+input string -->
+
+Collected^Disclosed^Sold_As long as the user has an account with us.
+
+expected output -->
+
+
+{
+
+[
+"actions":
+
+{
+"Collected":"true",
+"Disclosed":"true",
+"Sold":"true"
+},
+"expected_months":
+{
+"As long as the user has an account with us":"true"
+}
+
+]
+
+}
+
+important note !! --> the first strings will be about the actions seperated by ^ and after underscore it will be about the time, remember that if it is in number it will be considered as months otherwise it will always be this string okay (As long as the user has an account with us).
+
+Interences -->
+
+input string -->
+
+yes_yes_yes*6
+
+
+expected output -->
+
+{
+
+[
+
+{
+
+"consumer_profiles":"true",
+"disclosure_info_third_party":"true",
+"sold_info_third_party":"true",
+"As long as the user has an account with us":"true"
+
+}
+
+]
+
+}
+
+important note !! --> the first strings will be about the confirmations in true or false seperated by underscores and after * it will be about the time, remember that if it is in number it will be considered as months otherwise it will always be this string okay (As long as the user has an account with us).
+
+
+sensitive personal information under state laws -->
+
+input string -->
+
+Account login information_Biometric data_Citizenship or immigration status$Disclosed^Sold*6_yes
+
+expected output -->
+
+{
+[
+
+"preconfigured_things":
+{
+"Account login information":"true",
+"Biometric data":"true",
+"Citizenship or immigration status":"true"
+},
+"actions":
+{
+"Disclosed":"true",
+"Sold":"true",
+"6 months":true,
+"confirmation_characteristics":"true"
+}
+
+]
+}
+
+
+
+important note !! --> the first strings will be about the preconfigured things sepreated by underscores and after $ it will be about the actions seperated by ^ and after * it will be about the time and confirmation in true or false seperated by underscores, remember that if it is in number it will be considered as months otherwise it will always be this string okay (As long as the user has an account with us).
+
+CCPA Metrics -->
+
+input string -->
+
+yes_https://ccpamatrics.com/link
+
+
+expected output -->
+
+{
+
+[
+
+{
+"confirmation":"true",
+"link":"https://ccpamatrics.com/link"
+}
+
+]
+
+}
+
+
+important note !! --> the first string will be about the confirmation in true or false and after underscore it will be about the link of ccpa metrics.
+
+Financial Incentives -->
+
+input -->
+
+1
+
+expected output -->
+
+{
+
+[
+
+{
+"confirmation":"true"
+
+}
+
+]
+
+}
+
+important note !! --> 1 means true and 0 means false.
+
+Inquiries -->
+
+input string -->
+
+privacy@mail.com$+1 038374673467346^https://contact.com/link*The contact method will be discussed soon.
+
+expected output -->
+
+{
+
+[
+
+{
+"email_address":"privacy@mail.com",
+"phone_number":"+1 038374673467346",
+"link_to_contact":"https://contact.com/link",
+"The contact method will be discussed soon."
+
+}
+
+]
+
+}
+
+important note !! --> the first string will be about the email and after $ it will be about phone number and after ^ it will be about the link to contact and after * it will be about the description of contact method.
