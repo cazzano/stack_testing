@@ -1,0 +1,290 @@
+EEA & UK Representative -->
+
+
+input -->
+
+3
+
+expected output -->
+
+{
+[
+
+"confirmation":
+{
+
+"Both":"true"
+}
+
+]
+
+}
+
+important note --> 1 means EEA Representative , 2 means UK Representative , 3 means Both and 4 Means neither.
+
+EEA Representative Name -->
+
+input string -->
+
+EEA Representative_representative@mail.com_https://eea_representative_site.com/link_+1394748474765757*yes_I don't want to include a Swiss representative
+
+expected output -->
+
+{
+"EEA Representative":
+
+[
+
+
+{
+
+"name":"EEA Representative",
+"email_address":"representative@mail.com",
+"contact_url":"https://eea_representative_site.com/link",
+"phone_number":"+1394748474765757"
+
+},
+
+{
+"confirmation":"true",
+"I don't want to include a Swiss representative":"true"
+
+}
+
+]
+
+}
+
+important note !! --> the first string will be about the name of the EEA representative and then mail address and then website and phone number, all in a sequence seperated by underscores and after * it will be about the confirmation in true or false and after underscore it will be about this confirmation (I don't want to include a Swiss representative).
+
+EEA Representative Address -->
+
+input string -->
+
+Iceland_Streets of Iceland_Second Street of Iceland_Colorado / California_London_55180_https://link_to_Contact.com/link
+
+expected output -->
+
+{
+
+"Address":
+[
+
+{
+
+"country":"Iceland",
+"Address Line 1":"Streets of Iceland",
+"Address Line 2":"Second Street of Iceland",
+"City / Town":"Colorado / California",
+"Province":"London",
+"Postal Code":"55180",
+"Contact URL":"https://link_to_Contact.com/link"
+}
+
+]
+
+}
+
+important note !!!!  the first string will be about the country and then address line 1 and then line 2 and then city or town and then province and then postal code and then contact url all in a sequence, seperated by underscores.
+
+UK Representative -->
+
+input string -->
+
+UK Representative_representative@mail.com_https://uk_representative_site.com/link_+1394748474765757
+
+expected output -->
+
+{
+"UK Representative":
+
+[
+
+
+{
+
+"name":"UK Representative",
+"email_address":"representative@mail.com",
+"contact_url":"https://uk_representative_site.com/link",
+"phone_number":"+1394748474765757"
+
+}
+]
+
+}
+
+important note !! --> the first string will be about the name of the EEA representative and then mail address and then website and phone number, all in a sequence seperated by underscores.
+
+
+UK Representative Address -->
+
+input string -->
+
+Iceland_Streets of Iceland_Second Street of Iceland_Colorado / California_London_55180_https://link_to_Contact.com/link
+
+expected output -->
+
+{
+
+"Address":
+[
+
+{
+
+"country":"Iceland",
+"Address Line 1":"Streets of Iceland",
+"Address Line 2":"Second Street of Iceland",
+"City / Town":"Colorado / California",
+"Province":"London",
+"Postal Code":"55180",
+"Contact URL":"https://link_to_Contact.com/link"
+}
+
+]
+
+}
+
+important note !!!!  the first string will be about the country and then address line 1 and then line 2 and then city or town and then province and then postal code and then contact url all in a sequence, seperated by underscores.
+
+
+International Transfers -->
+
+input string -->
+
+yes_Albania_California_London*Google_Nvidia_Chatgpt$yes_link-to-data-processing.com/link_corporate-binding-link.com/link^European Commission's Standard Contractual Clauses_Binding corporate rules
+
+expected output -->
+
+
+{
+"confirmation":"true"
+[
+"server_location":
+{
+"Albania":"true",
+"California":"true",
+"London":"true"
+},
+"third_party_location":
+{
+"Google":"true",
+"Nvidia":"true",
+"Chatgpt":"true"
+},
+"confirmation_to_link":"true"
+{
+"data_processing_agreement_link":"link_to_data_processing.com/link",
+"corporate_binding_rules_link":"link_to_data_processing.com/link"
+},
+
+"rules_for_transfering_personal_info_internationally":
+{
+
+"European Commission's Standard Contractual Clauses":"true",
+"Binding corporate rules":"true"
+
+}
+
+]
+
+}
+
+important note !!! --> the first string will be about the confirmation in true or false and after underscore it will be about the server locations seperated by underscore and after the * it will be about the third party locations seperated by underscores and after $ it will be about the confirmation to link in true or false and after underscore it will be about the some legal rule's links seperated by underscore and after  ^ it will be about the rules to transfer internationally seperated by underscores.
+
+
+EU/UK Legal Bases for processing -->
+
+input string -->
+
+Yes, I understand that Termly lists these five legal bases by default in my privacy policy._Consent: You have given clear consent for us to process your personal information for a specific purpose._Performance of a contract: Processing is necessary to perform a contract with you._Legitimate interests: Processing is necessary for our legitimate interests._Legal obligation: Processing is necessary to comply with the law._Vital interests: Processing is necessary to protect someone's life._Public task: Processing is necessary to perform a task in the public interest.
+
+
+expected output -->
+
+
+{
+
+[
+
+"some EU/UK laws":
+{
+
+"Yes, I understand that Termly lists these five legal bases by default in my privacy policy.":"true",
+"Consent: You have given clear consent for us to process your personal information for a specific purpose.":"true",
+"Performance of a contract: Processing is necessary to perform a contract with you.":"true",
+"Legitimate interests: Processing is necessary for our legitimate interests.":"true",
+"Legal obligation: Processing is necessary to comply with the law.":"true",
+"Vital interests: Processing is necessary to protect someone's life.":"true",
+"Public task: Processing is necessary to perform a task in the public interest.":"true"
+}
+
+]
+
+
+}
+
+important note !!! --> the first string will be about some EU/UK laws seperated by underscores okay.
+
+
+Data Privacy Framework (DPF) -->
+
+
+input string -->
+
+yes_Both$yes^private-link.com/link_dpf-listing.com/link;Independent dispute resolution provider (Switzerland based):BBA ghost agent 47_ghost-resolution.com/link&Federal Trade Commission (FTC)_U.S. Department of Transportation (DOT)*Own Government_Three times%yes_Here's our dpf certificattion.
+
+expected output -->
+
+
+{
+
+"confirmation":"true"
+[
+
+"some_DPF_confirmations":
+
+{
+
+"Both":"true",
+"registration_to_uk_extenstion_EU-US_dpf":"true"
+},
+"some DPF entities and DPF listing links":
+{
+
+"private-link.com/link":"true",
+"dpf-listing.com/link":"true"
+},
+"Independent Despute Resolution":
+{
+
+"Independent dispute resolution provider (Switzerland based)":"true",
+"BBA ghost agent 47":"true",
+"ghost-resolution.com/link"
+},
+"preconfigured_things":
+{
+
+"Federal Trade Commission (FTC)":"true",
+"U.S. Department of Transportation (DOT)":"true"
+},
+"custom_things":{
+
+"Own Government":"true",
+"Three times":"true"
+},
+
+"DPF certification":{
+"confirmation_to_dpf":"true",
+"Here's our dpf certificattion.":"true"
+}
+
+
+]
+
+
+
+
+}
+
+
+important note !!!! --> the first string will be about the confirmation in true or false and after underscore it will be about the DPF confirmations in any string and after $ it will be about extra confirmations in true or false and after and after ^ it will be about the dpf entities and listing links seperated by underscores and after ; it will be about the independent dispute resolution name and after : it will be about the independent resolution provider and it's link seperated by underscores and after & it will be preconfgured things seperated by underscores and after * it will be about the custom things seperated by underscores and after % it will be about the confirmation to dpf certification in yes or no and after underscore it will be about the dpf certification's additional information.
