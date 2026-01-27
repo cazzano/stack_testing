@@ -1,0 +1,132 @@
+usage -->
+
+input_string -->
+
+hello world.com_health care app_facebook app
+
+expected output -->
+
+{
+[
+{
+"website":"hello world.com"
+},
+{
+"mobile app":"health care app"
+},
+{
+"facebook application":"facebook app"
+}
+]
+}
+
+important note !!!--> Items are separated by _ (underscore). First part is website, second is mobile app, third is facebook application.
+
+
+english preference -->
+
+input_string -->
+
+1
+
+expected output -->
+
+{
+"english preference":"American English"
+}
+
+important note !!!--> "1" = American English, "0" = British English
+
+
+use and description -->
+
+input_string -->
+
+yes_management lab*just kidding brother
+
+expected output -->
+
+{
+[
+{
+"confirmation":"yes",
+"use_case":"management lab",
+"description":"just kidding brother"
+}
+]
+}
+
+important note !!!--> confirmation and use_case separated by _ (underscore), use_case and description separated by * (asterisk)
+
+
+usage -->
+
+input_string -->
+
+website.com_only mobile app
+
+expected output -->
+
+{
+[
+{
+"website":"website.com"
+},
+{
+"mobile app":"only mobile app"
+}
+]
+}
+
+important note !!!--> Missing items are simply omitted from output
+
+
+english preference -->
+
+input_string -->
+
+0
+
+expected output -->
+
+{
+"english preference":"British English"
+}
+
+important note !!!--> "0" = British English
+
+
+use and description -->
+
+input_string -->
+
+no_general use
+
+expected output -->
+
+{
+[
+{
+"confirmation":"no",
+"use_case":"general use",
+"description":""
+}
+]
+}
+
+important note !!!--> If no * found, description is empty string
+
+
+use and description -->
+
+input_string -->
+
+ 
+
+expected output -->
+
+{
+"use and description":[]
+}
+
+important note !!!--> Empty input returns empty array
