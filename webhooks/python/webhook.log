@@ -1,0 +1,29 @@
+2026-03-01 20:53:09 [INFO] webhook — Table + NOTIFY trigger ready.
+2026-03-01 20:53:09 [INFO] webhook — Loaded 10 existing notifications from Postgres.
+2026-03-01 20:53:09 [INFO] webhook — App ready — Docs: http://127.0.0.1:8000/docs
+2026-03-01 20:53:09 [INFO] webhook — SSE stream: http://127.0.0.1:8000/webhook/stream
+2026-03-01 20:53:09 [INFO] webhook — asyncpg connected — LISTENing on 'new_notification'...
+2026-03-01 20:54:00 [INFO] webhook — SSE client connected (1 total)
+2026-03-01 20:54:13 [INFO] webhook — NOTIFY received → id=11 | 'bye'
+2026-03-01 20:54:15 [INFO] webhook — NOTIFY received → id=12 | 'bye'
+2026-03-01 20:54:17 [INFO] webhook — SSE client disconnected (0 remaining)
+2026-03-01 20:54:18 [INFO] webhook — SSE client connected (1 total)
+2026-03-01 20:54:23 [INFO] webhook — NOTIFY received → id=13 | 'bye'
+2026-03-01 20:54:30 [INFO] webhook — NOTIFY received → id=14 | 'bye'
+2026-03-01 20:54:31 [INFO] webhook — NOTIFY received → id=15 | 'bye'
+2026-03-01 20:54:32 [INFO] webhook — NOTIFY received → id=16 | 'bye'
+2026-03-01 20:54:33 [INFO] webhook — NOTIFY received → id=17 | 'bye'
+2026-03-01 20:54:34 [INFO] webhook — NOTIFY received → id=18 | 'bye'
+2026-03-01 20:54:35 [INFO] webhook — NOTIFY received → id=19 | 'bye'
+2026-03-01 20:54:35 [INFO] webhook — NOTIFY received → id=20 | 'bye'
+2026-03-01 20:54:36 [INFO] webhook — NOTIFY received → id=21 | 'bye'
+2026-03-01 20:54:37 [INFO] webhook — NOTIFY received → id=22 | 'bye'
+2026-03-01 20:54:37 [INFO] webhook — NOTIFY received → id=23 | 'bye'
+2026-03-01 20:54:38 [INFO] webhook — NOTIFY received → id=24 | 'bye'
+2026-03-01 20:54:39 [INFO] webhook — NOTIFY received → id=25 | 'bye'
+2026-03-01 20:54:39 [INFO] webhook — NOTIFY received → id=26 | 'bye'
+2026-03-01 20:54:40 [INFO] webhook — NOTIFY received → id=27 | 'bye'
+2026-03-01 20:54:40 [INFO] webhook — NOTIFY received → id=28 | 'bye'
+2026-03-01 20:54:41 [INFO] webhook — NOTIFY received → id=29 | 'bye'
+2026-03-01 20:54:42 [INFO] webhook — NOTIFY received → id=30 | 'bye'
+2026-03-01 20:54:43 [INFO] webhook — NOTIFY received → id=31 | 'bye'
