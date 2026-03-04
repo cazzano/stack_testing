@@ -47,3 +47,27 @@
 2026-03-01 21:01:50 [INFO] webhook — NOTIFY received → id=41 | 'bye'
 2026-03-01 21:01:51 [INFO] webhook — NOTIFY received → id=42 | 'bye'
 2026-03-01 21:01:53 [INFO] webhook — NOTIFY received → id=43 | 'bye'
+2026-03-01 21:02:41 [INFO] webhook — Table + NOTIFY trigger ready.
+2026-03-01 21:02:41 [INFO] webhook — App ready — Webhook stream: http://127.0.0.1:8000/webhook/stream
+2026-03-01 21:02:41 [INFO] webhook — asyncpg connected — LISTENing on 'new_notification'...
+2026-03-01 21:06:49 [INFO] webhook — pg_listener shutting down.
+2026-03-01 21:06:49 [INFO] webhook — Shutdown complete.
+2026-03-03 13:30:27 [INFO] webhook — Table + NOTIFY trigger ready.
+2026-03-03 13:30:27 [INFO] webhook — App ready — Webhook stream: http://127.0.0.1:8000/webhook/stream
+2026-03-03 13:30:27 [INFO] webhook — asyncpg connected — LISTENing on 'new_notification'...
+2026-03-03 13:30:44 [INFO] webhook — pg_listener shutting down.
+2026-03-03 13:30:44 [INFO] webhook — Shutdown complete.
+2026-03-03 13:30:47 [INFO] webhook — Table + NOTIFY trigger ready.
+2026-03-03 13:30:47 [INFO] webhook — App ready — Webhook stream: http://127.0.0.1:8000/webhook/stream
+2026-03-03 13:30:47 [INFO] webhook — asyncpg connected — LISTENing on 'new_notification'...
+2026-03-03 13:31:30 [INFO] webhook — SSE client connected (1 total)
+2026-03-03 13:31:51 [INFO] webhook — SSE client connected (2 total)
+2026-03-03 13:32:03 [INFO] webhook — SSE client disconnected (1 remaining)
+2026-03-03 13:32:13 [INFO] webhook — NOTIFY received → id=44 | 'bye'
+2026-03-03 13:32:24 [INFO] webhook — NOTIFY received → id=45 | 'hi'
+2026-03-03 13:32:28 [INFO] webhook — NOTIFY received → id=46 | 'hello'
+2026-03-03 13:38:44 [INFO] webhook — SSE client disconnected (0 remaining)
+2026-03-03 13:38:49 [INFO] webhook — SSE client connected (1 total)
+2026-03-03 15:13:35 [INFO] webhook — SSE client disconnected (0 remaining)
+2026-03-03 15:13:36 [INFO] webhook — pg_listener shutting down.
+2026-03-03 15:13:36 [INFO] webhook — Shutdown complete.
