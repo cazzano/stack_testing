@@ -1,0 +1,64 @@
+<div class="section">
+  <div class="section-header">
+    <div class="breadcrumb">~/portfolio <span>$</span> ./contact.sh</div>
+    <h1 class="section-title">Contact <span class="accent">/ reach out</span></h1>
+    <div class="section-sub">open to freelance, collabs, and interesting problems</div>
+  </div>
+
+  <div class="contact-grid">
+    <a class="contact-card" href="mailto:hello@dev.pk">
+      <div class="contact-icon">✉</div>
+      <div class="contact-info">
+        <div class="label">email</div>
+        <div class="value">hello@dev.pk</div>
+      </div>
+    </a>
+    <a class="contact-card" href="#">
+      <div class="contact-icon">⌥</div>
+      <div class="contact-info">
+        <div class="label">github</div>
+        <div class="value">github.com/hello</div>
+      </div>
+    </a>
+    <a class="contact-card" href="#">
+      <div class="contact-icon">in</div>
+      <div class="contact-info">
+        <div class="label">linkedin</div>
+        <div class="value">linkedin.com/in/hello</div>
+      </div>
+    </a>
+    <a class="contact-card" href="#">
+      <div class="contact-icon">✦</div>
+      <div class="contact-info">
+        <div class="label">location</div>
+        <div class="value">Lahore, Pakistan 🇵🇰</div>
+      </div>
+    </a>
+  </div>
+
+  <div class="divider"></div>
+
+  <div style="font-size:10px;color:var(--muted);letter-spacing:.15em;text-transform:uppercase;margin-bottom:12px">// send a message</div>
+
+  <div class="cmd-input-wrap">
+    <div class="cmd-input-header">terminal · POST /api/message</div>
+    <form class="cmd-input-body"
+          hx-post="/api/message"
+          hx-target="#cmd-output"
+          hx-swap="innerHTML"
+          hx-indicator="#send-indicator">
+      <span class="cmd-prompt-sym">$</span>
+      <input
+        class="cmd-input"
+        name="message"
+        type="text"
+        placeholder="type your message and press enter..."
+        autocomplete="off"
+        required>
+      <button type="submit" class="cmd-submit">send ↵</button>
+    </form>
+    <div id="cmd-output">
+      <span class="htmx-indicator" id="send-indicator" style="color:var(--accent);font-size:12px;padding:0 0 4px">▸ sending...</span>
+    </div>
+  </div>
+</div>
