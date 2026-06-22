@@ -1,0 +1,45 @@
+Tables -->
+
+add these tables dont fuck existing tables in schema.sql file okay -->
+
+patients -->
+
+id, full_name varchar(200) , relation varchar(200),gaurdian_name varchar(200), phone_number varchar(50), email_address varchar(200), age integer, CNIC integer, DOB timedate, street_address varchar(500), city varchar(200), medical_notes String
+
+visit_records -->
+
+id, diagnoses string, reason string, patient_id (will be linked to patients table).
+
+medical_history -->
+
+id, notes string, patient_id ( will be linked to patients table ).
+
+appointments -->
+
+id, status varchar(200), type varchar(200), reason string, patient_id (will be linked to the patients table),patient_name varchar(200),doctor_name varchar(200)  , visit_date datetime, preferred_time datetime, doctor_id (will be linked to users table but only linked to the roles is equal= doctor (case-insensitive)), billing_id ( will be linked to the billing table )
+
+billing -->
+
+id, token varchar(200) , fee float 
+
+expenses -->
+
+id, description string, category varchar(500), amount float
+
+support_ticket -->
+
+id , full_name varchar(200), phone number varchar(50), problem_type varchar(500), problem_description string, status varchar(200)
+
+rx_letter -->
+
+id, default_value bool, title varchar(200), institute_name varchar(500), doctor_name varchar(200), speciality varchar(500), reg_no varchar(500), phone varchar(50), institute_address string, trust_info string, logo string, vitals bool, checklist bool, signature bool
+
+prescription -->
+
+id, patient_name varchar(200) , guardian_name varchar(200), gender varchar(100), age integer,phone varchar(50),cnic integer, doctor_name varchar(200), billing_id ( will be linked to the billing table and this specific column can be nullable=true )  , barcode  varchar(300), diagnoses string, clinical_findings string, diabetes bool, ihd bool, hepatitas bool, asthma bool, pulse varchar(200), bp varchar(200),respiration varchar(200), temperature varchar(200), blood_cp bool, rbs bool, fbs bool, viral_marker bool, lfts bool, rfts bool, ecg bool, xray bool, usg bool, advise string, rx_letter_id ( will be linked to rx_letter table )
+
+dosage -->
+
+id, dosage varchar(500), frequency varchar(500), duration varchar(500), prescription_id (will be linked to the presction table).
+
+  

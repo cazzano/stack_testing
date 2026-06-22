@@ -1,10 +1,52 @@
 [package]
-name = "rust"
+name = "note_taking"
 version = "0.1.0"
 edition = "2021"
 
 [dependencies]
+# Web framework
+actix-web = "4"
+actix-rt = "2"
+actix-cors = "0.7"
 
-actix-web = "4.5.1"
-serde_json = "1.0"
+# Database
+sqlx = { version = "0.7", features = ["runtime-tokio-rustls", "sqlite", "migrate"] }
+
+# Configuration
+config = "0.14"
 serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+dotenv = "0.15"
+
+# Async
+tokio = { version = "1", features = ["full"] }
+
+# Logging
+log = "0.4"
+env_logger = "0.11"
+
+# Cross-platform home directory
+dirs = "5"
+
+# Auth library (local crate)
+auth_core = { path = "../../src/auth_core" }
+
+# OpenAPI / Swagger
+utoipa = { version = "4", features = ["actix_extras"] }
+utoipa-swagger-ui = { version = "7", features = ["actix-web", "vendored"] }
+
+# UUID generation for token IDs
+uuid = { version = "1", features = ["v4"] }
+
+# JWT validation on middleware side
+jsonwebtoken = "9"
+
+
+[dev-dependencies]
+
+[lib]
+path = "src/lib.rs"
+
+[[bin]]
+name = "note_taking"
+path = "src/main.rs"
